@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Elm + Websockets</title>
+    <script type="text/javascript" src="lib/signalr/signalr.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</head>
+
+<body>
+    <div id="myapp"></div>
+</body>
+
+<script type="text/javascript">
+    const app = Elm.Main.init({
+        node: document.getElementById('myapp')
+    });
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/someHub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    async function start() {
+        try {
+            await connection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.log(err);
+            setTimeout(start, 5000);
+        }
+    };
+
+    connection.on('TheMessageName', data => {
+        console.log('Data received: ', data);
+        app.ports.updates.send(data);
+    });
+
+    connection.onclose(async () => {
+        await start();
+    });
+
+    start();
+</script>
+
+</html>

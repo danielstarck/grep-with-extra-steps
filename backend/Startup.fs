@@ -14,6 +14,10 @@ type Startup(configuration: IConfiguration) =
     member _.ConfigureServices(services: IServiceCollection) =
         services.AddCors() |> ignore
         services.AddControllers() |> ignore
+        services.AddSignalR() |> ignore
+
+        services.AddHostedService<SomeBackgroundService>()
+        |> ignore
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         if env.IsDevelopment() then
@@ -24,8 +28,12 @@ type Startup(configuration: IConfiguration) =
             // Also add...
             // "applicationUrl": "https://localhost:5001;http://localhost:5000",
             // ...to launchSettings.json
+            .UseDefaultFiles()
+            .UseStaticFiles()
             .UseCors(Action<_>(fun (options: CorsPolicyBuilder) -> options.AllowAnyOrigin() |> ignore))
             .UseRouting()
             .UseAuthorization()
-            .UseEndpoints(fun endpoints -> endpoints.MapControllers() |> ignore)
+            .UseEndpoints(fun endpoints ->
+                endpoints.MapControllers() |> ignore
+                endpoints.MapHub<SomeHub>("/someHub") |> ignore)
         |> ignore

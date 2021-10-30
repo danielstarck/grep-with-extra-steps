@@ -1,4 +1,4 @@
-module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
+port module Main exposing (Model(..), Msg(..), init, main, subscriptions, update, view)
 
 import Browser
 import Html exposing (Html, pre, text)
@@ -15,48 +15,37 @@ main =
 
 
 type Model
-    = Failure
-    | Loading
+    = Loading
     | Success String
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading
-    , Http.get
-        { url = "http://localhost:5000/helloworld"
-        , expect = Http.expectString GotText
-        }
-    )
+    ( Loading, Cmd.none )
 
 
 type Msg
-    = GotText (Result Http.Error String)
+    = SignalRMessage String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotText result ->
-            case result of
-                Ok fullText ->
-                    ( Success fullText, Cmd.none )
+        SignalRMessage string ->
+            ( Success ("Received message from SignalR: " ++ string), Cmd.none )
 
-                Err _ ->
-                    ( Failure, Cmd.none )
+
+port updates : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    updates SignalRMessage
 
 
 view : Model -> Html Msg
 view model =
     case model of
-        Failure ->
-            text "Could not GET http://localhost:5000/helloworld"
-
         Loading ->
             text "Loading..."
 
