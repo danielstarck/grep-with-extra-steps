@@ -1,5 +1,11 @@
-**/bin
-**/obj
-**/.idea
-**/elm-stuff
-**/node_modules
+.idea/
+
+backend/bin/
+backend/obj/
+backend/wwwroot/js/
+backend/wwwroot/lib/
+
+frontend/elm-stuff/
+frontend/node_modules/
+
+frontend/package-lock.json
