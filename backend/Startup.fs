@@ -1,23 +1,27 @@
 namespace GrepWithExtraSteps
 
-open System
+open GrepWithExtraSteps.Types
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
-open Microsoft.AspNetCore.Cors.Infrastructure
 
 type Startup(configuration: IConfiguration) =
     member _.Configuration = configuration
 
     member _.ConfigureServices(services: IServiceCollection) =
-        services.AddCors() |> ignore
+//        services.AddCors() |> ignore
         services.AddControllers() |> ignore
         services.AddSignalR() |> ignore
 
-        services.AddHostedService<SomeBackgroundService>()
+        services
+            .AddSingleton<ResultService>()
+            .AddSingleton<IQueryService, QueryService>()
         |> ignore
+        
+//        services.AddHostedService<SomeBackgroundService>()
+//        |> ignore
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         if env.IsDevelopment() then
@@ -30,7 +34,7 @@ type Startup(configuration: IConfiguration) =
             // ...to launchSettings.json
             .UseDefaultFiles()
             .UseStaticFiles()
-            .UseCors(Action<_>(fun (options: CorsPolicyBuilder) -> options.AllowAnyOrigin() |> ignore))
+//            .UseCors(Action<_>(fun (options: CorsPolicyBuilder) -> options.AllowAnyOrigin() |> ignore))
             .UseRouting()
             .UseAuthorization()
             .UseEndpoints(fun endpoints ->

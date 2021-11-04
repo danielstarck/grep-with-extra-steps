@@ -13,14 +13,16 @@
 </body>
 
 <script type="text/javascript">
-    const app = Elm.Main.init({
-        node: document.getElementById('myapp')
-    });
+    const app =
+        Elm.Main.init({
+            node: document.getElementById("myapp")
+        });
 
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/someHub")
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
+    const connection =
+        new signalR.HubConnectionBuilder()
+            .withUrl("/someHub")
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
 
     async function start() {
         try {
@@ -32,9 +34,25 @@
         }
     };
 
-    connection.on('TheMessageName', data => {
-        console.log('Data received: ', data);
-        app.ports.updates.send(data);
+    connection.on("ResultChunk", data => {
+        console.log("ResultChunk: ", data);
+        const serverMessage = { tag: "ResultChunk", chunk: data }
+        app.ports.receiveMessage.send(serverMessage);
+    });
+
+    connection.on("QueryFinished", data => {
+        console.log("QueryFinished: ", data)
+        const serverMessage = { tag: "QueryFinished" }
+        app.ports.receiveMessage.send(serverMessage)
+    });
+
+    app.ports.sendMessage.subscribe(function (message) {
+        console.log("sendMessage: ", message)
+        connection
+            .send(message)
+            .catch(function (err) {
+                return console.log(err.toString()); // toString redundant?
+            });
     });
 
     connection.onclose(async () => {
