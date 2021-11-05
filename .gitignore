@@ -1,5 +1,8 @@
 .idea/
 
+.fake
+.ionide
+
 backend/bin/
 backend/obj/
 backend/wwwroot/js/
