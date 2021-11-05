@@ -11,7 +11,6 @@ type Startup(configuration: IConfiguration) =
     member _.Configuration = configuration
 
     member _.ConfigureServices(services: IServiceCollection) =
-//        services.AddCors() |> ignore
         services.AddControllers() |> ignore
         services.AddSignalR() |> ignore
 
@@ -19,22 +18,14 @@ type Startup(configuration: IConfiguration) =
             .AddSingleton<ResultService>()
             .AddSingleton<IQueryService, QueryService>()
         |> ignore
-        
-//        services.AddHostedService<SomeBackgroundService>()
-//        |> ignore
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
         if env.IsDevelopment() then
             app.UseDeveloperExceptionPage() |> ignore
 
         app
-            // .UseHttpsRedirection()
-            // Also add...
-            // "applicationUrl": "https://localhost:5001;http://localhost:5000",
-            // ...to launchSettings.json
             .UseDefaultFiles()
             .UseStaticFiles()
-//            .UseCors(Action<_>(fun (options: CorsPolicyBuilder) -> options.AllowAnyOrigin() |> ignore))
             .UseRouting()
             .UseAuthorization()
             .UseEndpoints(fun endpoints ->

@@ -136,9 +136,6 @@ subscriptions _ =
 view : Model -> Html.Html Msg
 view model =
     let
-        buttonAttributes =
-            [ Element.Background.color <| Element.rgb255 182 182 253, Element.Border.width 1, Element.padding 2 ]
-
         directoryInput =
             Element.Input.text
                 []
@@ -168,6 +165,9 @@ view model =
 
         queryInput =
             Element.column [] [ directoryInput, filesInput, textInput ]
+
+        buttonAttributes =
+            [ Element.Background.color <| Element.rgb255 182 182 253, Element.Border.width 1, Element.padding 2 ]
 
         startButton =
             Element.Input.button buttonAttributes { onPress = Just StartQuery, label = Element.text "Start" }

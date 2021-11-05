@@ -6,12 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Controllers/HelloWorldController.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="ResultService.fs" />
     <Compile Include="SomeHub.fs" />
     <Compile Include="QueryService.fs" />
-    <Compile Include="SomeBackgroundService.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
