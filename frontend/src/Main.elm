@@ -27,9 +27,16 @@ type Status
     | ExecutingQuery
 
 
+type alias ResultChunk =
+    { filePath : String
+    , lineNumber : Int
+    , matchingText : String
+    }
+
+
 type alias Model =
     { status : Status
-    , lines : List String
+    , resultChunks : List ResultChunk
     , resizing : Maybe ResizeOperation
     , fileColumnWidth : Int
     , lineColumnWidth : Int
@@ -46,7 +53,7 @@ type alias ResizeOperation =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { status = Idle
-      , lines = []
+      , resultChunks = []
       , resizing = Nothing
       , fileColumnWidth = 200
       , lineColumnWidth = 50
@@ -56,7 +63,7 @@ init _ =
 
 
 type ServerMessage
-    = ResultChunk String
+    = ResultChunks (List ResultChunk)
     | QueryFinished
     | Unexpected Json.Encode.Value
 
@@ -83,10 +90,10 @@ update msg model =
     case msg of
         ServerMessage message ->
             case message of
-                ResultChunk chunk ->
+                ResultChunks chunks ->
                     case model.status of
                         ExecutingQuery ->
-                            ( { model | lines = model.lines ++ [ chunk ] }, Cmd.none )
+                            ( { model | resultChunks = model.resultChunks ++ chunks }, Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -98,7 +105,7 @@ update msg model =
                     ( model, Cmd.none )
 
         StartQuery ->
-            ( { model | status = ExecutingQuery, lines = [] }, sendMessage "StartQuery" )
+            ( { model | status = ExecutingQuery, resultChunks = [] }, sendMessage "StartQuery" )
 
         CancelQuery ->
             case model.status of
@@ -172,20 +179,28 @@ port receiveMessage : (Json.Encode.Value -> msg) -> Sub msg
 decodeServerMessage : Json.Encode.Value -> ServerMessage
 decodeServerMessage json =
     let
-        resultChunkDecoder =
-            Json.Decode.string
-                |> Json.Decode.field "chunk"
-                |> Json.Decode.andThen
-                    (\chunk -> Json.Decode.succeed <| ResultChunk chunk)
+        chunkDecoder =
+            Json.Decode.map3
+                ResultChunk
+                (Json.Decode.field "filePath" Json.Decode.string)
+                (Json.Decode.field "lineNumber" Json.Decode.int)
+                (Json.Decode.field "matchingText" Json.Decode.string)
 
+        resultChunksDecoder : Json.Decode.Decoder ServerMessage
+        resultChunksDecoder =
+            Json.Decode.list chunkDecoder
+                |> Json.Decode.field "chunks"
+                |> Json.Decode.andThen (ResultChunks >> Json.Decode.succeed)
+
+        serverMessageDecoder : Json.Decode.Decoder ServerMessage
         serverMessageDecoder =
             Json.Decode.string
                 |> Json.Decode.field "tag"
                 |> Json.Decode.andThen
                     (\tag ->
                         case tag of
-                            "ResultChunk" ->
-                                resultChunkDecoder
+                            "ResultChunks" ->
+                                resultChunksDecoder
 
                             "QueryFinished" ->
                                 Json.Decode.succeed QueryFinished
@@ -379,30 +394,30 @@ getColumnHeaders model =
         |> Element.row [ Element.width Element.fill ]
 
 
-lineToRowElement : Model -> String -> Element Msg
-lineToRowElement model line =
-    [ line |> getFileCell model, line |> getLineCell model, line |> getTextCell ]
+resultChunkToRowElement : Model -> ResultChunk -> Element Msg
+resultChunkToRowElement model chunk =
+    [ chunk |> getFileCell model, chunk |> getLineCell model, chunk |> getTextCell ]
         |> Element.row [ Element.width Element.fill ]
 
 
-getFileCell : Model -> String -> Element Msg
-getFileCell model line =
-    getCellWithBorder model.fileColumnWidth line
+getFileCell : Model -> ResultChunk -> Element Msg
+getFileCell model chunk =
+    getCellWithBorder model.fileColumnWidth chunk.filePath
 
 
-getLineCell : Model -> String -> Element Msg
-getLineCell model line =
-    getCellWithBorder model.lineColumnWidth line
+getLineCell : Model -> ResultChunk -> Element Msg
+getLineCell model chunk =
+    getCellWithBorder model.lineColumnWidth <| String.fromInt chunk.lineNumber
+
+
+getTextCell : ResultChunk -> Element Msg
+getTextCell chunk =
+    getCell Nothing chunk.matchingText
 
 
 getCellWithBorder : Int -> String -> Element Msg
 getCellWithBorder width string =
     Element.row [] [ getCell (Just width) string, columnBorder ]
-
-
-getTextCell : String -> Element Msg
-getTextCell string =
-    getCell Nothing string
 
 
 getCell : Maybe Int -> String -> Element msg
@@ -426,8 +441,8 @@ getCell maybeWidthPx string =
 
 getGridRows : Model -> Element Msg
 getGridRows model =
-    model.lines
-        |> List.map (lineToRowElement model)
+    model.resultChunks
+        |> List.map (resultChunkToRowElement model)
         |> Element.column [ Element.width Element.fill ]
 
 

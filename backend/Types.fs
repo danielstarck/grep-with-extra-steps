@@ -3,6 +3,10 @@
 open System.Threading.Tasks
 
 type IQueryService =
-    abstract member StartQuery: unit -> Task
-    abstract member CancelQuery: unit -> Task
+    abstract member StartQuery : unit -> Task
+    abstract member CancelQuery : unit -> Task
 
+type ResultChunk =
+    { FilePath: string
+      LineNumber: int
+      MatchingText: string }

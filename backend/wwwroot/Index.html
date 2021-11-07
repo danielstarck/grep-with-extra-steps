@@ -34,9 +34,9 @@
         }
     };
 
-    connection.on("ResultChunk", data => {
-        console.log("ResultChunk: ", data);
-        const serverMessage = { tag: "ResultChunk", chunk: data }
+    connection.on("ResultChunks", data => {
+        console.log("ResultChunks: ", data);
+        const serverMessage = { tag: "ResultChunks", chunks: data }
         app.ports.receiveMessage.send(serverMessage);
     });
 
