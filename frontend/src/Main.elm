@@ -37,17 +37,28 @@ type alias ResultChunk =
 type alias Model =
     { status : Status
     , resultChunks : List ResultChunk
-    , resizing : Maybe ResizeOperation
+    , resizing : Maybe Resizing
     , fileColumnWidth : Int
     , lineColumnWidth : Int
     }
 
 
-type alias ResizeOperation =
+type alias PartialResizeState =
     { column : ColumnResizeHandle
     , initialSize : Int
-    , initialMouseX : Maybe Int
     }
+
+
+type alias ResizeState =
+    { column : ColumnResizeHandle
+    , initialSize : Int
+    , initialMouseX : Int
+    }
+
+
+type Resizing
+    = AwaitMouseMove PartialResizeState
+    | InProgress ResizeState
 
 
 init : () -> ( Model, Cmd Msg )
@@ -82,7 +93,7 @@ type Msg
     | TextChanged String
     | ColumnResizeHandleMouseDown ColumnResizeHandle
     | GlobalMouseUp
-    | MouseMoveMsg Int
+    | MouseMoveX Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,11 +138,11 @@ update msg model =
                                 Line ->
                                     model.lineColumnWidth
                     in
-                    Just
-                        { column = column
-                        , initialSize = initialSize
-                        , initialMouseX = Nothing
-                        }
+                    Just <|
+                        AwaitMouseMove
+                            { column = column
+                            , initialSize = initialSize
+                            }
               }
             , Cmd.none
             )
@@ -139,28 +150,30 @@ update msg model =
         GlobalMouseUp ->
             ( { model | resizing = Nothing }, Cmd.none )
 
-        MouseMoveMsg x ->
+        MouseMoveX currentMouseX ->
             case model.resizing of
-                Just resizing ->
+                Just (AwaitMouseMove partialResizeState) ->
                     -- TODO: somehow disable mouse y movement when resizing
-                    case resizing.initialMouseX of
-                        Just initialMouseX ->
-                            let
-                                deltaX =
-                                    x - initialMouseX
+                    let
+                        resizing =
+                            InProgress { column = partialResizeState.column, initialSize = partialResizeState.initialSize, initialMouseX = currentMouseX }
+                    in
+                    ( { model | resizing = Just resizing }, Cmd.none )
 
-                                newSize =
-                                    max 10 (resizing.initialSize + deltaX)
-                            in
-                            case resizing.column of
-                                File ->
-                                    ( { model | fileColumnWidth = newSize }, Cmd.none )
+                Just (InProgress resizeState) ->
+                    let
+                        deltaMouseX =
+                            currentMouseX - resizeState.initialMouseX
 
-                                Line ->
-                                    ( { model | lineColumnWidth = newSize }, Cmd.none )
+                        newWidth =
+                            max 10 (resizeState.initialSize + deltaMouseX)
+                    in
+                    case resizeState.column of
+                        File ->
+                            ( { model | fileColumnWidth = newWidth }, Cmd.none )
 
-                        Nothing ->
-                            ( { model | resizing = Just { resizing | initialMouseX = Just x } }, Cmd.none )
+                        Line ->
+                            ( { model | lineColumnWidth = newWidth }, Cmd.none )
 
                 Nothing ->
                     -- TODO: can never happen. model things differently?
@@ -228,7 +241,7 @@ subscriptions model =
                 |> Maybe.map
                     (\_ ->
                         Browser.Events.onMouseMove <|
-                            Json.Decode.map MouseMoveMsg
+                            Json.Decode.map MouseMoveX
                                 (Json.Decode.field "pageX" Json.Decode.int)
                     )
     in
