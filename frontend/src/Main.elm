@@ -32,11 +32,13 @@ type alias Model =
     , lines : List String
     , resizing : Maybe ResizeOperation
     , fileColumnWidth : Int
+    , lineColumnWidth : Int
     }
 
 
 type alias ResizeOperation =
-    { initialSize : Int
+    { column : ColumnResizeHandle
+    , initialSize : Int
     , initialMouseX : Maybe Int
     }
 
@@ -47,6 +49,7 @@ init _ =
       , lines = []
       , resizing = Nothing
       , fileColumnWidth = 200
+      , lineColumnWidth = 50
       }
     , Cmd.none
     )
@@ -58,6 +61,11 @@ type ServerMessage
     | Unexpected Json.Encode.Value
 
 
+type ColumnResizeHandle
+    = File
+    | Line
+
+
 type Msg
     = ServerMessage ServerMessage
     | StartQuery
@@ -65,8 +73,8 @@ type Msg
     | DirectoryChanged String
     | FilesChanged String
     | TextChanged String
-    | MouseDownMsg -- TODO: include payload to identify element
-    | MouseUpMsg -- TODO: rename to GlobalMouseUpMsg
+    | ColumnResizeHandleMouseDown ColumnResizeHandle
+    | GlobalMouseUp
     | MouseMoveMsg Int Int
 
 
@@ -100,10 +108,28 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        MouseDownMsg ->
-            ( { model | resizing = Just { initialSize = model.fileColumnWidth, initialMouseX = Nothing } }, Cmd.none )
+        ColumnResizeHandleMouseDown column ->
+            ( { model
+                | resizing =
+                    let
+                        initialSize =
+                            case column of
+                                File ->
+                                    model.fileColumnWidth
 
-        MouseUpMsg ->
+                                Line ->
+                                    model.lineColumnWidth
+                    in
+                    Just
+                        { column = column
+                        , initialSize = initialSize
+                        , initialMouseX = Nothing
+                        }
+              }
+            , Cmd.none
+            )
+
+        GlobalMouseUp ->
             ( { model | resizing = Nothing }, Cmd.none )
 
         MouseMoveMsg x _ ->
@@ -119,12 +145,18 @@ update msg model =
                                 newSize =
                                     max 10 (resizing.initialSize + deltaX)
                             in
-                            ( { model | fileColumnWidth = newSize }, Cmd.none )
+                            case resizing.column of
+                                File ->
+                                    ( { model | fileColumnWidth = newSize }, Cmd.none )
+
+                                Line ->
+                                    ( { model | lineColumnWidth = newSize }, Cmd.none )
 
                         Nothing ->
                             ( { model | resizing = Just { resizing | initialMouseX = Just x } }, Cmd.none )
 
                 Nothing ->
+                    -- TODO: can never happen. model things differently?
                     ( model, Cmd.none )
 
         _ ->
@@ -275,12 +307,12 @@ getStatus model =
 
 getFileColumnHeader : Model -> Element Msg
 getFileColumnHeader model =
-    getColumnHeaderWithBorder (Just MouseDownMsg) model.fileColumnWidth "File"
+    getColumnHeaderWithBorder (Just <| ColumnResizeHandleMouseDown File) model.fileColumnWidth "File"
 
 
-lineColumnHeader : Element Msg
-lineColumnHeader =
-    getColumnHeaderWithBorder Nothing lineColumnWidth "Line"
+getLineColumnHeader : Model -> Element Msg
+getLineColumnHeader model =
+    getColumnHeaderWithBorder (Just <| ColumnResizeHandleMouseDown Line) model.lineColumnWidth "Line"
 
 
 getColumnHeaderWithBorder : Maybe Msg -> Int -> String -> Element Msg
@@ -325,13 +357,13 @@ columnBorder =
 
 getColumnHeaders : Model -> Element Msg
 getColumnHeaders model =
-    [ getFileColumnHeader model, lineColumnHeader ]
+    [ getFileColumnHeader model, getLineColumnHeader model ]
         |> Element.row []
 
 
 lineToRowElement : Model -> String -> Element.Element Msg
 lineToRowElement model line =
-    [ line |> getFileCell model, line |> getLineCell ]
+    [ line |> getFileCell model, line |> getLineCell model ]
         |> Element.row []
 
 
@@ -340,14 +372,9 @@ getFileCell model line =
     getCellWithBorder model.fileColumnWidth line
 
 
-lineColumnWidth : Int
-lineColumnWidth =
-    300
-
-
-getLineCell : String -> Element.Element Msg
-getLineCell line =
-    getCellWithBorder lineColumnWidth line
+getLineCell : Model -> String -> Element.Element Msg
+getLineCell model line =
+    getCellWithBorder model.lineColumnWidth line
 
 
 getCellWithBorder : Int -> String -> Element.Element Msg
@@ -386,4 +413,4 @@ view model =
             , Element.height Element.fill
             , Element.Background.color (Element.rgb255 250 200 50)
             ]
-        |> Element.layout [ Element.Events.onMouseUp MouseUpMsg ]
+        |> Element.layout [ Element.Events.onMouseUp GlobalMouseUp ]
