@@ -322,31 +322,23 @@ textColumnHeader =
 
 getColumnHeader : Maybe ( Msg, Int ) -> String -> Element Msg
 getColumnHeader maybeMouseDownMsgAndSize title =
-    case maybeMouseDownMsgAndSize of
-        Just ( msg, size ) ->
-            Element.row [] [ getColumnHeaderInternal (Just size) title, getColumnBorderResizeHandle msg ]
-
-        Nothing ->
-            getColumnHeaderInternal Nothing title
-
-
-getColumnHeaderInternal : Maybe Int -> String -> Element Msg
-getColumnHeaderInternal maybeWidth title =
     let
-        width =
-            case maybeWidth of
-                Just px ->
-                    Element.px px
-
-                Nothing ->
-                    Element.fill
-    in
-    Element.text title
-        |> Element.el
+        baseAttributes =
             [ Element.Background.color <| Element.rgb255 120 120 253
-            , Element.width width
             , Element.clip
             ]
+    in
+    case maybeMouseDownMsgAndSize of
+        Just ( msg, size ) ->
+            Element.row []
+                [ Element.text title
+                    |> Element.el ((Element.width <| Element.px size) :: baseAttributes)
+                , getColumnBorderResizeHandle msg
+                ]
+
+        Nothing ->
+            Element.text title
+                |> Element.el (Element.width Element.fill :: baseAttributes)
 
 
 getColumnBorderResizeHandle : Msg -> Element Msg
