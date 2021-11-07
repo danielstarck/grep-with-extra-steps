@@ -7,7 +7,7 @@ import Element.Background
 import Element.Border
 import Element.Events
 import Element.Input
-import Html
+import Html exposing (Html)
 import Json.Decode
 import Json.Encode
 
@@ -266,7 +266,7 @@ textInput =
         }
 
 
-queryInput : Element.Element Msg
+queryInput : Element Msg
 queryInput =
     Element.column [] [ directoryInput, filesInput, textInput ]
 
@@ -291,7 +291,7 @@ control =
     Element.row [ Element.spacing 2 ] [ startButton, cancelButton ]
 
 
-getStatus : Model -> Element.Element msg
+getStatus : Model -> Element msg
 getStatus model =
     let
         statusText =
@@ -307,27 +307,51 @@ getStatus model =
 
 getFileColumnHeader : Model -> Element Msg
 getFileColumnHeader model =
-    getColumnHeaderWithBorder (Just <| ColumnResizeHandleMouseDown File) model.fileColumnWidth "File"
+    getColumnHeader (Just ( ColumnResizeHandleMouseDown File, model.fileColumnWidth )) "File"
 
 
 getLineColumnHeader : Model -> Element Msg
 getLineColumnHeader model =
-    getColumnHeaderWithBorder (Just <| ColumnResizeHandleMouseDown Line) model.lineColumnWidth "Line"
+    getColumnHeader (Just ( ColumnResizeHandleMouseDown Line, model.lineColumnWidth )) "Line"
 
 
-getColumnHeaderWithBorder : Maybe Msg -> Int -> String -> Element Msg
-getColumnHeaderWithBorder maybeMouseDownMsg width title =
-    Element.row [] [ getColumnHeader width title, getColumnBorder maybeMouseDownMsg ]
+textColumnHeader : Element Msg
+textColumnHeader =
+    getColumnHeader Nothing "Text"
 
 
-getColumnHeader : Int -> String -> Element Msg
-getColumnHeader width title =
+getColumnHeader : Maybe ( Msg, Int ) -> String -> Element Msg
+getColumnHeader maybeMouseDownMsgAndSize title =
+    case maybeMouseDownMsgAndSize of
+        Just ( msg, size ) ->
+            Element.row [] [ getColumnHeaderInternal (Just size) title, getColumnBorderResizeHandle msg ]
+
+        Nothing ->
+            getColumnHeaderInternal Nothing title
+
+
+getColumnHeaderInternal : Maybe Int -> String -> Element Msg
+getColumnHeaderInternal maybeWidth title =
+    let
+        width =
+            case maybeWidth of
+                Just px ->
+                    Element.px px
+
+                Nothing ->
+                    Element.fill
+    in
     Element.text title
         |> Element.el
             [ Element.Background.color <| Element.rgb255 120 120 253
-            , Element.width <| Element.px width
+            , Element.width width
             , Element.clip
             ]
+
+
+getColumnBorderResizeHandle : Msg -> Element Msg
+getColumnBorderResizeHandle mouseDownMsg =
+    getColumnBorder <| Just mouseDownMsg
 
 
 getColumnBorder : Maybe Msg -> Element Msg
@@ -347,7 +371,9 @@ getColumnBorder maybeMouseDownMsg =
                 Nothing ->
                     baseAttributes
     in
-    Element.el attributes Element.none
+    Element.el
+        attributes
+        Element.none
 
 
 columnBorder : Element Msg
@@ -357,14 +383,14 @@ columnBorder =
 
 getColumnHeaders : Model -> Element Msg
 getColumnHeaders model =
-    [ getFileColumnHeader model, getLineColumnHeader model ]
-        |> Element.row []
+    [ getFileColumnHeader model, getLineColumnHeader model, textColumnHeader ]
+        |> Element.row [ Element.width Element.fill ]
 
 
-lineToRowElement : Model -> String -> Element.Element Msg
+lineToRowElement : Model -> String -> Element Msg
 lineToRowElement model line =
-    [ line |> getFileCell model, line |> getLineCell model ]
-        |> Element.row []
+    [ line |> getFileCell model, line |> getLineCell model, line |> getTextCell ]
+        |> Element.row [ Element.width Element.fill ]
 
 
 getFileCell : Model -> String -> Element Msg
@@ -372,40 +398,54 @@ getFileCell model line =
     getCellWithBorder model.fileColumnWidth line
 
 
-getLineCell : Model -> String -> Element.Element Msg
+getLineCell : Model -> String -> Element Msg
 getLineCell model line =
     getCellWithBorder model.lineColumnWidth line
 
 
-getCellWithBorder : Int -> String -> Element.Element Msg
+getCellWithBorder : Int -> String -> Element Msg
 getCellWithBorder width string =
-    Element.row [] [ getCell width string, columnBorder ]
+    Element.row [] [ getCell (Just width) string, columnBorder ]
 
 
-getCell : Int -> String -> Element.Element msg
-getCell width string =
+getTextCell : String -> Element Msg
+getTextCell string =
+    getCell Nothing string
+
+
+getCell : Maybe Int -> String -> Element msg
+getCell maybeWidthPx string =
+    let
+        width =
+            case maybeWidthPx of
+                Just px ->
+                    Element.px px
+
+                Nothing ->
+                    Element.fill
+    in
     Element.text string
         |> Element.el
             [ Element.Background.color <| Element.rgb255 120 253 120
-            , Element.width <| Element.px width
+            , Element.width width
             , Element.clip
             ]
 
 
-getGridRows : Model -> Element.Element Msg
+getGridRows : Model -> Element Msg
 getGridRows model =
     model.lines
         |> List.map (lineToRowElement model)
-        |> Element.column []
+        |> Element.column [ Element.width Element.fill ]
 
 
 getGrid : Model -> Element Msg
 getGrid model =
     [ getColumnHeaders model, getGridRows model ]
-        |> Element.column [ Element.height Element.fill ]
+        |> Element.column [ Element.width Element.fill, Element.height Element.fill ]
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html Msg
 view model =
     [ queryInput, control, getStatus model, getGrid model ]
         |> Element.column
