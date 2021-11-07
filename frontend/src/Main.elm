@@ -82,7 +82,7 @@ type Msg
     | TextChanged String
     | ColumnResizeHandleMouseDown ColumnResizeHandle
     | GlobalMouseUp
-    | MouseMoveMsg Int Int
+    | MouseMoveMsg Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -139,7 +139,7 @@ update msg model =
         GlobalMouseUp ->
             ( { model | resizing = Nothing }, Cmd.none )
 
-        MouseMoveMsg x _ ->
+        MouseMoveMsg x ->
             case model.resizing of
                 Just resizing ->
                     -- TODO: somehow disable mouse y movement when resizing
@@ -228,9 +228,8 @@ subscriptions model =
                 |> Maybe.map
                     (\_ ->
                         Browser.Events.onMouseMove <|
-                            Json.Decode.map2 MouseMoveMsg
+                            Json.Decode.map MouseMoveMsg
                                 (Json.Decode.field "pageX" Json.Decode.int)
-                                (Json.Decode.field "pageY" Json.Decode.int)
                     )
     in
     [ serverMessageSubscription
