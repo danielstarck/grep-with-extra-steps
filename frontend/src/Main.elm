@@ -329,7 +329,7 @@ getStatus model =
                 ExecutingQuery ->
                     "Executing query"
     in
-    Element.el [ Element.padding 2 ] <| Element.text <| statusText
+    Element.el [ Element.Background.color <| Element.rgb255 50 197 250, Element.padding 2 ] <| Element.text <| statusText
 
 
 getFileColumnHeader : Model -> Element Msg
