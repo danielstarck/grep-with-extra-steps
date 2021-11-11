@@ -3,10 +3,10 @@
 .fake
 .ionide
 
-backend/bin/
-backend/obj/
-backend/wwwroot/js/
-backend/wwwroot/lib/
+backend/**/bin/
+backend/**/obj/
+backend/src/GrepWithExtraSteps/wwwroot/js/
+backend/src/GrepWithExtraSteps/wwwroot/lib/
 
 frontend/elm-stuff/
 frontend/node_modules/
