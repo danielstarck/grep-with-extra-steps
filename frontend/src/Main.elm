@@ -2,6 +2,8 @@ port module Main exposing (..)
 
 import Browser
 import Browser.Events
+import Dict
+import Dict.Extra as Dict
 import Element exposing (Element)
 import Element.Background
 import Element.Border
@@ -34,9 +36,21 @@ type alias ResultChunk =
     }
 
 
+type alias FileSearchResult =
+    { filePath : String
+    , matchingLines : List MatchingLine
+    }
+
+
+type alias MatchingLine =
+    { lineNumber : Int
+    , matchingText : String
+    }
+
+
 type alias Model =
     { status : Status
-    , resultChunks : List ResultChunk
+    , fileSearchResults : List FileSearchResult
     , resizing : Maybe Resizing
     , fileColumnWidth : Int
     , lineColumnWidth : Int
@@ -64,7 +78,7 @@ type Resizing
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { status = Idle
-      , resultChunks = []
+      , fileSearchResults = []
       , resizing = Nothing
       , fileColumnWidth = 200
       , lineColumnWidth = 50
@@ -96,6 +110,41 @@ type Msg
     | MouseMoveX Int
 
 
+toFileSearchResults : List ResultChunk -> List FileSearchResult
+toFileSearchResults =
+    let
+        toMatchingLine : ResultChunk -> MatchingLine
+        toMatchingLine chunk =
+            { lineNumber = chunk.lineNumber
+            , matchingText = chunk.matchingText
+            }
+
+        toFileSearchResult : ( String, List ResultChunk ) -> FileSearchResult
+        toFileSearchResult ( filePath, chunks ) =
+            { filePath = filePath
+            , matchingLines = chunks |> List.map toMatchingLine
+            }
+    in
+    Dict.groupBy .filePath
+        >> Dict.toList
+        >> List.map toFileSearchResult
+
+
+mergeFileSearchResults : List FileSearchResult -> List FileSearchResult -> List FileSearchResult
+mergeFileSearchResults results1 results2 =
+    results1
+        ++ results2
+        |> Dict.groupBy .filePath
+        |> Dict.toList
+        |> List.map
+            (\( key, value ) ->
+                { filePath = key
+                , matchingLines = value |> List.concatMap .matchingLines |> List.sortBy .lineNumber
+                }
+            )
+        |> List.sortBy .filePath
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -104,7 +153,7 @@ update msg model =
                 ResultChunks chunks ->
                     case model.status of
                         ExecutingQuery ->
-                            ( { model | resultChunks = model.resultChunks ++ chunks }, Cmd.none )
+                            ( { model | fileSearchResults = chunks |> toFileSearchResults |> mergeFileSearchResults model.fileSearchResults }, Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -116,7 +165,7 @@ update msg model =
                     ( model, Cmd.none )
 
         StartQuery ->
-            ( { model | status = ExecutingQuery, resultChunks = [] }, sendMessage "StartQuery" )
+            ( { model | status = ExecutingQuery, fileSearchResults = [] }, sendMessage "StartQuery" )
 
         CancelQuery ->
             case model.status of
@@ -406,25 +455,55 @@ getColumnHeaders model =
         |> Element.row [ Element.width Element.fill ]
 
 
-resultChunkToRowElement : Model -> ResultChunk -> Element Msg
-resultChunkToRowElement model chunk =
-    [ chunk |> getFileCell model, chunk |> getLineCell model, chunk |> getTextCell ]
-        |> Element.row [ Element.width Element.fill ]
+fileSearchResultToRowElements : Model -> FileSearchResult -> Element Msg
+fileSearchResultToRowElements model result =
+    getFileHeaderRow model result
+        :: getMatchingLineRows model result
+        |> Element.column [ Element.width Element.fill ]
 
 
-getFileCell : Model -> ResultChunk -> Element Msg
-getFileCell model chunk =
-    getCellWithBorder model.fileColumnWidth chunk.filePath
+getFileHeaderRow : Model -> FileSearchResult -> Element Msg
+getFileHeaderRow model result =
+    let
+        matchingLineCountText =
+            (result.matchingLines
+                |> List.length
+                |> String.fromInt
+            )
+                ++ " matches in [TODO: result.linesSearched] lines."
+    in
+    [ getFileCell model.fileColumnWidth result.filePath, getLineCell model.lineColumnWidth Nothing, getTextCell matchingLineCountText ]
+        |> Element.row [ Element.width Element.fill, Element.Background.color <| Element.rgb255 86 172 76 ]
 
 
-getLineCell : Model -> ResultChunk -> Element Msg
-getLineCell model chunk =
-    getCellWithBorder model.lineColumnWidth <| String.fromInt chunk.lineNumber
+getMatchingLineRows : Model -> FileSearchResult -> List (Element Msg)
+getMatchingLineRows model result =
+    let
+        toMatchingLineRow : MatchingLine -> Element Msg
+        toMatchingLineRow matchingLine =
+            [ getFileCell model.fileColumnWidth result.filePath, getLineCell model.lineColumnWidth <| Just matchingLine.lineNumber, getTextCell matchingLine.matchingText ]
+                |> Element.row [ Element.width Element.fill, Element.Background.color <| Element.rgb255 95 200 84 ]
+    in
+    result.matchingLines
+        |> List.map toMatchingLineRow
 
 
-getTextCell : ResultChunk -> Element Msg
-getTextCell chunk =
-    getCell Nothing chunk.matchingText
+getFileCell : Int -> String -> Element Msg
+getFileCell width filePath =
+    getCellWithBorder width filePath
+
+
+getLineCell : Int -> Maybe Int -> Element Msg
+getLineCell width lineNumber =
+    lineNumber
+        |> Maybe.map String.fromInt
+        |> Maybe.withDefault "-"
+        |> getCellWithBorder width
+
+
+getTextCell : String -> Element Msg
+getTextCell text =
+    getCell Nothing text
 
 
 getCellWithBorder : Int -> String -> Element Msg
@@ -445,16 +524,15 @@ getCell maybeWidthPx string =
     in
     Element.text string
         |> Element.el
-            [ Element.Background.color <| Element.rgb255 120 253 120
-            , Element.width width
+            [ Element.width width
             , Element.clip
             ]
 
 
 getGridRows : Model -> Element Msg
 getGridRows model =
-    model.resultChunks
-        |> List.map (resultChunkToRowElement model)
+    model.fileSearchResults
+        |> List.map (fileSearchResultToRowElements model)
         |> Element.column [ Element.width Element.fill ]
 
 
