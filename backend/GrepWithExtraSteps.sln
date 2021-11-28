@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps", "GrepWithExtraSteps\GrepWithExtraSteps.fsproj", "{CFED80D8-621A-4E06-8429-AF10754D77FD}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps", "src\GrepWithExtraSteps\GrepWithExtraSteps.fsproj", "{CFED80D8-621A-4E06-8429-AF10754D77FD}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Core", "GrepWithExtraSteps.Core\GrepWithExtraSteps.Core.fsproj", "{EA8099D6-0CAA-4640-9165-91CE6889E500}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Core", "src\GrepWithExtraSteps.Core\GrepWithExtraSteps.Core.fsproj", "{EA8099D6-0CAA-4640-9165-91CE6889E500}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,7 +14,7 @@ Global
 		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86GrepWithExtraSteps
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -6,12 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Types.fs" />
-    <Compile Include="ResultService.fs" />
+    <Compile Include="FileSystemService.fs" />
     <Compile Include="SomeHub.fs" />
-    <Compile Include="QueryService.fs" />
+    <Compile Include="MessageService.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GrepWithExtraSteps.Core\GrepWithExtraSteps.Core.fsproj" />
   </ItemGroup>
 
 </Project>

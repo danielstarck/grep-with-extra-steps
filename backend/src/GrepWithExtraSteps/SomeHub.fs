@@ -1,19 +1,29 @@
 ﻿namespace GrepWithExtraSteps
 
 open System.Threading.Tasks
-open GrepWithExtraSteps.Types
+open GrepWithExtraSteps.Core.Domain
+open GrepWithExtraSteps.Core.Interfaces
 open Microsoft.AspNetCore.SignalR
 open Microsoft.Extensions.Logging
 
-type SomeHub(logger: ILogger<SomeHub>, queryService: IQueryService, hubContext: IHubContext<SomeHub>) =
+type SomeHub(logger: ILogger<SomeHub>, queryService: IQueryService) =
     inherit Hub()
 
     member _.StartQuery() : Task =
         logger.LogInformation "StartQuery: no payload"
-    
-        queryService.StartQuery ()
+
+        let query =
+            { Directory = ""
+              Files = ""
+              Text = "" }
+
+        do queryService.ExecuteQuery query
+
+        Task.CompletedTask
 
     member _.CancelQuery() : Task =
         logger.LogInformation "CancelQuery: no payload"
-        
-        queryService.CancelQuery ()
+
+        do queryService.CancelQuery()
+
+        Task.CompletedTask

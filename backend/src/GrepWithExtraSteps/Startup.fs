@@ -1,6 +1,7 @@
 namespace GrepWithExtraSteps
 
-open GrepWithExtraSteps.Types
+open GrepWithExtraSteps.Core.DependencyInjection
+open GrepWithExtraSteps.Core.Interfaces
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
@@ -14,9 +15,10 @@ type Startup(configuration: IConfiguration) =
         services.AddControllers() |> ignore
         services.AddSignalR() |> ignore
 
-        services
-            .AddSingleton<ResultService>()
-            .AddSingleton<IQueryService, QueryService>()
+        (services
+            .AddSingleton<IMessageService, MessageService>()
+            .AddSingleton<IFileSystemService, FileSystemService>())
+        |> addQueryService
         |> ignore
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
