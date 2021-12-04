@@ -435,6 +435,10 @@ textColumnHeader =
     getColumnHeader Nothing "Text"
 
 
+
+-- TODO: refactor
+
+
 getColumnHeader : Maybe ( Msg, Int ) -> String -> Element Msg
 getColumnHeader maybeMouseDownMsgAndSize title =
     let
@@ -486,6 +490,10 @@ getColumnBorder maybeMouseDownMsg =
 columnBorder : Element Msg
 columnBorder =
     getColumnBorder Nothing
+
+
+
+-- TODO: refactor. [columnHeader, columnDivider, columnHeader] instead of [columnWithDivider, column]
 
 
 getColumnHeaders : Model -> Element Msg
