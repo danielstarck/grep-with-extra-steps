@@ -12,7 +12,7 @@ type SomeHub(logger: ILogger<SomeHub>, queryService: IQueryService) =
     member _.StartQuery(query: Query) : Task =
         logger.LogInformation $"StartQuery: %A{query}"
 
-        do queryService.ExecuteQuery query
+        do queryService.StartQuery query
 
         Task.CompletedTask
 

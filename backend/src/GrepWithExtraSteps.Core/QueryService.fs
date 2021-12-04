@@ -49,7 +49,7 @@ type QueryService(fileSystemService: IFileSystemService, messageService: IMessag
         }
 
     interface IQueryService with
-        member _.ExecuteQuery(query: Query) : unit =
+        member _.StartQuery(query: Query) : unit =
             let executeQueryAsync =
                 async {
                     let! directory = fileSystemService.GetDirectory query.Directory
