@@ -30,15 +30,15 @@ module Domain =
     type File = { Path: string; Lines: string seq }
 
     type Directory =
-        | Directories of Directory list
-        | Files of File list
+        { Directories: Directory list
+          Files: string list }
 
 module Interfaces =
     open Domain
 
     type IFileSystemService =
-        abstract member ReadFile : string -> string seq
-    // abstract member GetDirectory
+        abstract member ReadFile : string -> Async<File>
+        abstract member GetDirectory : string -> Async<Directory>
 
     type IMessageService =
         abstract member SendResultChunks : ResultChunk list -> Async<unit>
