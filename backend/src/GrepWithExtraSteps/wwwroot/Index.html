@@ -35,24 +35,39 @@
     };
 
     connection.on("ResultChunks", data => {
-        console.log("ResultChunks: ", data);
+        console.log("ResultChunks:", data);
         const serverMessage = { tag: "ResultChunks", chunks: data }
         app.ports.receiveMessage.send(serverMessage);
     });
 
     connection.on("QueryFinished", data => {
-        console.log("QueryFinished: ", data)
+        console.log("QueryFinished:", data)
         const serverMessage = { tag: "QueryFinished" }
         app.ports.receiveMessage.send(serverMessage)
     });
 
+    // TODO: refactor. sendMessage/sendMessageWithPayload
     app.ports.sendMessage.subscribe(function (message) {
-        console.log("sendMessage: ", message)
-        connection
-            .send(message)
-            .catch(function (err) {
-                return console.log(err.toString()); // toString redundant?
-            });
+        console.log("sendMessage:", message)
+        switch (message.tag) {
+            case "StartQuery":
+                connection
+                    .send(message.tag, message.payload)
+                    .catch(function (err) {
+                        return console.log(err.toString()); // toString redundant?
+                    });
+                break;
+
+            case "CancelQuery":
+                connection
+                    .send(message.tag)
+                    .catch(function (err) {
+                        return console.log(err.toString()); // toString redundant?
+                    });
+                break;
+            default:
+                console.log("Unmatched message tag:", message.tag)
+        }
     });
 
     connection.onclose(async () => {

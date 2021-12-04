@@ -49,7 +49,10 @@ type alias MatchingLine =
 
 
 type alias Model =
-    { status : Status
+    { directory : String
+    , files : String
+    , text : String
+    , status : Status
     , fileSearchResults : List FileSearchResult
     , resizing : Maybe Resizing
     , fileColumnWidth : Int
@@ -77,7 +80,10 @@ type Resizing
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { status = Idle
+    ( { directory = ""
+      , files = ""
+      , text = ""
+      , status = Idle
       , fileSearchResults = []
       , resizing = Nothing
       , fileColumnWidth = 200
@@ -165,12 +171,20 @@ update msg model =
                     ( model, Cmd.none )
 
         StartQuery ->
-            ( { model | status = ExecutingQuery, fileSearchResults = [] }, sendMessage "StartQuery" )
+            let
+                payload =
+                    Json.Encode.object
+                        [ ( "directory", Json.Encode.string model.directory )
+                        , ( "files", Json.Encode.string model.files )
+                        , ( "text", Json.Encode.string model.text )
+                        ]
+            in
+            ( { model | status = ExecutingQuery, fileSearchResults = [] }, sendTaggedMessage "StartQuery" <| Just payload )
 
         CancelQuery ->
             case model.status of
                 ExecutingQuery ->
-                    ( { model | status = Idle }, sendMessage "CancelQuery" )
+                    ( { model | status = Idle }, sendTaggedMessage "CancelQuery" Nothing )
 
                 _ ->
                     ( model, Cmd.none )
@@ -228,14 +242,39 @@ update msg model =
                     -- TODO: can never happen. model things differently?
                     ( model, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+        DirectoryChanged directory ->
+            ( { model | directory = directory }, Cmd.none )
+
+        FilesChanged files ->
+            ( { model | files = files }, Cmd.none )
+
+        TextChanged text ->
+            ( { model | text = text }, Cmd.none )
 
 
-port sendMessage : String -> Cmd msg
+port sendMessage : Json.Encode.Value -> Cmd msg
 
 
 port receiveMessage : (Json.Encode.Value -> msg) -> Sub msg
+
+
+sendTaggedMessage : String -> Maybe Json.Encode.Value -> Cmd msg
+sendTaggedMessage tag maybePayload =
+    let
+        fields =
+            ( "tag", Json.Encode.string tag )
+                :: (case maybePayload of
+                        Just payload ->
+                            [ ( "payload", payload ) ]
+
+                        Nothing ->
+                            []
+                   )
+
+        json =
+            Json.Encode.object fields
+    in
+    sendMessage json
 
 
 decodeServerMessage : Json.Encode.Value -> ServerMessage

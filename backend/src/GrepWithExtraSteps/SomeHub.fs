@@ -9,13 +9,8 @@ open Microsoft.Extensions.Logging
 type SomeHub(logger: ILogger<SomeHub>, queryService: IQueryService) =
     inherit Hub()
 
-    member _.StartQuery() : Task =
-        logger.LogInformation "StartQuery: no payload"
-
-        let query =
-            { Directory = ""
-              Files = ""
-              Text = "" }
+    member _.StartQuery(query: Query) : Task =
+        logger.LogInformation $"StartQuery: %A{query}"
 
         do queryService.ExecuteQuery query
 
