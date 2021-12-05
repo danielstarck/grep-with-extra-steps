@@ -1,11 +1,14 @@
 namespace GrepWithExtraSteps.Core
 
+open System.IO
+open FSharp.Control
+
 module Domain =
     type MatchingLine =
         { FilePath: string
           LineNumber: int
           MatchingText: string }
-          
+
     type ResultChunk = MatchingLine list
 
     type Query =
@@ -29,22 +32,26 @@ module Domain =
 
         let value (ValidQuery query) = query
 
-    type File = { Path: string; Lines: string seq }
+    type File = { Path: string; Lines: string AsyncSeq }
 
     type Directory =
-        { Directories: Directory list
-          Files: string list }
+        { Directories: Directory seq
+          Files: File seq }
 
 module Interfaces =
     open Domain
 
     type IFileSystemService =
-        abstract member ReadFile : string -> Async<File>
-        abstract member GetDirectory : string -> Async<Directory>
+        abstract member GetDirectories : path: string -> string seq
+        abstract member GetFiles : path: string -> string seq
+        abstract member GetReader : path: string -> StreamReader
 
     type IMessageService =
         abstract member SendResultChunk : ResultChunk -> Async<unit>
         abstract member SendQueryFinished : unit -> Async<unit>
 
     type IQueryService =
-        abstract ExecuteQuery : Query -> Async<ResultChunk seq>
+        abstract ExecuteQuery : Directory -> lineIsMatch: (string -> bool) -> AsyncSeq<ResultChunk>
+
+    type IDirectoryService =
+        abstract GetDirectory : fileIsInScope: (string -> bool) -> path: string -> Directory

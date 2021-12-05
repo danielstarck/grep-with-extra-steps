@@ -2,13 +2,11 @@ namespace GrepWithExtraSteps.Core
 
 open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
-open System.Text.RegularExpressions
+open FSharp.Control
 
-type internal QueryService(fileSystemService: IFileSystemService) =
-    let isMatch (queryText: string) line = Regex.IsMatch(line, queryText)
-
-    let toMatchingLine (queryText: string) filePath (lineNumber, line) : MatchingLine option =
-        if line |> isMatch queryText then
+type internal QueryService() =
+    let toMatchingLine lineIsMatch filePath (lineNumber, line) : MatchingLine option =
+        if line |> lineIsMatch then
             Some
                 { FilePath = filePath
                   LineNumber = lineNumber
@@ -16,39 +14,27 @@ type internal QueryService(fileSystemService: IFileSystemService) =
         else
             None
 
-    let searchFile (queryText: string) (filePath: string) : Async<ResultChunk> =
-        async {
-            let! file = fileSystemService.ReadFile filePath
+    let toResultChunk (lineIsMatch: string -> bool) (file: File) : Async<ResultChunk> =
+        file.Lines
+        |> AsyncSeq.zip (AsyncSeq.initInfinite ((+) 1L >> int))
+        |> AsyncSeq.choose (toMatchingLine lineIsMatch file.Path)
+        |> AsyncSeq.toListAsync
+                
+    let rec searchDirectory (lineIsMatch: string -> bool) (directory: Directory) : AsyncSeq<ResultChunk> =
+        let resultChunksFromThisDirectory =
+            directory.Files
+            |> AsyncSeq.ofSeq
+            |> AsyncSeq.mapAsync (toResultChunk lineIsMatch)
 
-            return
-                file.Lines
-                |> Seq.zip (Seq.initInfinite (fun index -> index + 1))
-                |> Seq.choose (toMatchingLine queryText file.Path)
-                |> Seq.toList
-        }
+        let resultChunksFromSubdirectories =
+            directory.Directories
+            |> AsyncSeq.ofSeq
+            |> AsyncSeq.collect (searchDirectory lineIsMatch)
 
-    let rec searchDirectory (queryText: string) (directory: Directory) : Async<ResultChunk seq> =
-        async {
-            let! filesFromThisDirectory =
-                directory.Files
-                |> Seq.map (searchFile queryText)
-                |> Async.Parallel
+        resultChunksFromSubdirectories
+        |> AsyncSeq.append resultChunksFromThisDirectory
 
-            let! filesFromSubdirectories =
-                directory.Directories
-                |> Seq.map (searchDirectory queryText)
-                |> Async.Parallel
-
-            return
-                filesFromSubdirectories
-                |> Seq.concat
-                |> Seq.append filesFromThisDirectory
-        }
-
+    // TODO: A result chunk must never be empty
     interface IQueryService with
-        member _.ExecuteQuery(query: Query) : Async<ResultChunk seq> =
-            async {
-                let! directory = fileSystemService.GetDirectory query.Directory
-
-                return! searchDirectory query.Text directory
-            }
+        member _.ExecuteQuery (directory: Directory) (lineIsMatch: string -> bool) : AsyncSeq<ResultChunk> =
+            searchDirectory lineIsMatch directory
