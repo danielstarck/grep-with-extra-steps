@@ -17,7 +17,8 @@ type Startup(configuration: IConfiguration) =
 
         (services
             .AddSingleton<IMessageService, MessageService>()
-            .AddSingleton<IFileSystemService, FileSystemService>())
+            .AddSingleton<IFileSystemService, FileSystemService>()
+            .AddSingleton<QueryJobService>())
         |> addQueryService
         |> ignore
 

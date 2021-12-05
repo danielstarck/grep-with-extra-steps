@@ -47,5 +47,4 @@ module Interfaces =
         abstract member SendQueryFinished : unit -> Async<unit>
 
     type IQueryService =
-        abstract StartQuery : Query -> unit
-        abstract CancelQuery : unit -> unit
+        abstract ExecuteQuery : Query -> Async<ResultChunk seq>

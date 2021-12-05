@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="FileSystemService.fs" />
+    <Compile Include="QueryJobService.fs" />
     <Compile Include="SomeHub.fs" />
     <Compile Include="MessageService.fs" />
     <Compile Include="Startup.fs" />
