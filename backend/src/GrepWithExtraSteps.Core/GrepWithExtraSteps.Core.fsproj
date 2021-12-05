@@ -4,6 +4,7 @@
     <RootNamespace>GrepWithExtraSteps.Core</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="QueryService.fs" />
     <Compile Include="DependencyInjection.fs" />

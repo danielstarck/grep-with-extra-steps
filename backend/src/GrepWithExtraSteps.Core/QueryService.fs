@@ -4,7 +4,7 @@ open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
 open System.Text.RegularExpressions
 
-type QueryService(fileSystemService: IFileSystemService) =
+type internal QueryService(fileSystemService: IFileSystemService) =
     let isMatch (queryText: string) line = Regex.IsMatch(line, queryText)
 
     let toMatchingLine (queryText: string) filePath (lineNumber, line) : MatchingLine option =
