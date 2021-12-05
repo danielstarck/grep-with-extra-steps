@@ -10,7 +10,7 @@ type QueryService(fileSystemService: IFileSystemService, messageService: IMessag
 
     let isMatch (queryText: string) line = Regex.IsMatch(line, queryText)
 
-    let toResultChunk (queryText: string) filePath (lineNumber, line) : ResultChunk option =
+    let toMatchingLine (queryText: string) filePath (lineNumber, line) : MatchingLine option =
         if line |> isMatch queryText then
             Some
                 { FilePath = filePath
@@ -19,18 +19,18 @@ type QueryService(fileSystemService: IFileSystemService, messageService: IMessag
         else
             None
 
-    let searchFile (queryText: string) (filePath: string) : Async<ResultChunk list> =
+    let searchFile (queryText: string) (filePath: string) : Async<ResultChunk> =
         async {
             let! file = fileSystemService.ReadFile filePath
 
             return
                 file.Lines
                 |> Seq.zip (Seq.initInfinite (fun index -> index + 1))
-                |> Seq.choose (toResultChunk queryText file.Path)
+                |> Seq.choose (toMatchingLine queryText file.Path)
                 |> Seq.toList
         }
 
-    let rec searchDirectory (queryText: string) (directory: Directory) : Async<ResultChunk list seq> =
+    let rec searchDirectory (queryText: string) (directory: Directory) : Async<ResultChunk seq> =
         async {
             let! filesFromThisDirectory =
                 directory.Files
@@ -53,10 +53,10 @@ type QueryService(fileSystemService: IFileSystemService, messageService: IMessag
             let executeQueryAsync =
                 async {
                     let! directory = fileSystemService.GetDirectory query.Directory
-                    let! nestedChunks = searchDirectory query.Text directory
+                    let! chunks = searchDirectory query.Text directory
 
-                    for chunks in nestedChunks do
-                        do! messageService.SendResultChunks chunks
+                    for chunk in chunks do
+                        do! messageService.SendResultChunk chunk
 
                     do! messageService.SendQueryFinished()
                 }

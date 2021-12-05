@@ -1,10 +1,12 @@
 namespace GrepWithExtraSteps.Core
 
 module Domain =
-    type ResultChunk =
+    type MatchingLine =
         { FilePath: string
           LineNumber: int
           MatchingText: string }
+          
+    type ResultChunk = MatchingLine list
 
     type Query =
         { Directory: string
@@ -41,7 +43,7 @@ module Interfaces =
         abstract member GetDirectory : string -> Async<Directory>
 
     type IMessageService =
-        abstract member SendResultChunks : ResultChunk list -> Async<unit>
+        abstract member SendResultChunk : ResultChunk -> Async<unit>
         abstract member SendQueryFinished : unit -> Async<unit>
 
     type IQueryService =

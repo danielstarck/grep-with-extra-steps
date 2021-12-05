@@ -6,12 +6,12 @@ open Microsoft.Extensions.Logging
 
 type MessageService(logger: ILogger<MessageService>, hubContext: IHubContext<SomeHub>) =
     interface IMessageService with
-        member _.SendResultChunks chunks =
+        member _.SendResultChunk chunk =
             async {
-                do logger.LogInformation($"Sent ResultChunks: %A{chunks}")
+                do logger.LogInformation($"Sent ResultChunk: %A{chunk}")
 
                 do!
-                    hubContext.Clients.All.SendAsync("ResultChunks", chunks)
+                    hubContext.Clients.All.SendAsync("ResultChunk", chunk)
                     |> Async.AwaitTask
             }
 

@@ -29,11 +29,15 @@ type Status
     | ExecutingQuery
 
 
-type alias ResultChunk =
+type alias MatchingLineDto =
     { filePath : String
     , lineNumber : Int
     , matchingText : String
     }
+
+
+type alias ResultChunkDto =
+    List MatchingLineDto
 
 
 type alias FileSearchResult =
@@ -94,7 +98,7 @@ init _ =
 
 
 type ServerMessage
-    = ResultChunks (List ResultChunk)
+    = ResultChunk ResultChunkDto
     | QueryFinished
     | Unexpected Json.Encode.Value
 
@@ -116,19 +120,19 @@ type Msg
     | MouseMoveX Int
 
 
-toFileSearchResults : List ResultChunk -> List FileSearchResult
+toFileSearchResults : ResultChunkDto -> List FileSearchResult
 toFileSearchResults =
     let
-        toMatchingLine : ResultChunk -> MatchingLine
-        toMatchingLine chunk =
-            { lineNumber = chunk.lineNumber
-            , matchingText = chunk.matchingText
+        toMatchingLine : MatchingLineDto -> MatchingLine
+        toMatchingLine matchingLineDto =
+            { lineNumber = matchingLineDto.lineNumber
+            , matchingText = matchingLineDto.matchingText
             }
 
-        toFileSearchResult : ( String, List ResultChunk ) -> FileSearchResult
-        toFileSearchResult ( filePath, chunks ) =
+        toFileSearchResult : ( String, ResultChunkDto ) -> FileSearchResult
+        toFileSearchResult ( filePath, chunk ) =
             { filePath = filePath
-            , matchingLines = chunks |> List.map toMatchingLine
+            , matchingLines = chunk |> List.map toMatchingLine
             }
     in
     Dict.groupBy .filePath
@@ -143,9 +147,9 @@ mergeFileSearchResults results1 results2 =
         |> Dict.groupBy .filePath
         |> Dict.toList
         |> List.map
-            (\( key, value ) ->
-                { filePath = key
-                , matchingLines = value |> List.concatMap .matchingLines |> List.sortBy .lineNumber
+            (\( filePath, fileSearchResults ) ->
+                { filePath = filePath
+                , matchingLines = fileSearchResults |> List.concatMap .matchingLines |> List.sortBy .lineNumber
                 }
             )
         |> List.sortBy .filePath
@@ -156,10 +160,10 @@ update msg model =
     case msg of
         ServerMessage message ->
             case message of
-                ResultChunks chunks ->
+                ResultChunk chunk ->
                     case model.status of
                         ExecutingQuery ->
-                            ( { model | fileSearchResults = chunks |> toFileSearchResults |> mergeFileSearchResults model.fileSearchResults }, Cmd.none )
+                            ( { model | fileSearchResults = chunk |> toFileSearchResults |> mergeFileSearchResults model.fileSearchResults }, Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -280,18 +284,18 @@ sendTaggedMessage tag maybePayload =
 decodeServerMessage : Json.Encode.Value -> ServerMessage
 decodeServerMessage json =
     let
-        chunkDecoder =
+        matchingLineDtoDecoder =
             Json.Decode.map3
-                ResultChunk
+                MatchingLineDto
                 (Json.Decode.field "filePath" Json.Decode.string)
                 (Json.Decode.field "lineNumber" Json.Decode.int)
                 (Json.Decode.field "matchingText" Json.Decode.string)
 
-        resultChunksDecoder : Json.Decode.Decoder ServerMessage
-        resultChunksDecoder =
-            Json.Decode.list chunkDecoder
-                |> Json.Decode.field "chunks"
-                |> Json.Decode.andThen (ResultChunks >> Json.Decode.succeed)
+        resultChunkDecoder : Json.Decode.Decoder ServerMessage
+        resultChunkDecoder =
+            Json.Decode.list matchingLineDtoDecoder
+                |> Json.Decode.field "chunk"
+                |> Json.Decode.andThen (ResultChunk >> Json.Decode.succeed)
 
         serverMessageDecoder : Json.Decode.Decoder ServerMessage
         serverMessageDecoder =
@@ -300,8 +304,8 @@ decodeServerMessage json =
                 |> Json.Decode.andThen
                     (\tag ->
                         case tag of
-                            "ResultChunks" ->
-                                resultChunksDecoder
+                            "ResultChunk" ->
+                                resultChunkDecoder
 
                             "QueryFinished" ->
                                 Json.Decode.succeed QueryFinished
