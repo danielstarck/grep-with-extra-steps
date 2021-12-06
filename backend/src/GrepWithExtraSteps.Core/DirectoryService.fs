@@ -5,7 +5,7 @@ open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
 
 // TODO: investigate Directory.EnumerateFileSystemEntries
-type DirectoryService(fileSystemService: IFileSystemService) =
+type internal DirectoryService(fileSystemService: IFileSystemService) =
     let readLines path : AsyncSeq<string> =
         use reader = fileSystemService.GetReader path
 
@@ -28,5 +28,4 @@ type DirectoryService(fileSystemService: IFileSystemService) =
           Files = getFiles fileIsInScope path }
 
     interface IDirectoryService with
-        member this.GetDirectory fileIsInScope path =
-            getDirectory fileIsInScope path
+        member this.GetDirectory fileIsInScope path = getDirectory fileIsInScope path

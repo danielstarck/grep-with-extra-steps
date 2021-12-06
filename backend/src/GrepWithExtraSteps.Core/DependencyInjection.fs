@@ -1,6 +1,10 @@
 module GrepWithExtraSteps.Core.DependencyInjection
 
+open GrepWithExtraSteps.Core.Interfaces
 open Microsoft.Extensions.DependencyInjection
 
-let addQueryService (services: IServiceCollection) =
+let addCoreServices (services: IServiceCollection) =
     services
+        .AddSingleton<IQueryJobService, QueryJobService>()
+        .AddSingleton<IDirectoryService, DirectoryService>()
+        .AddSingleton<IFileSystemService, FileSystemService>()

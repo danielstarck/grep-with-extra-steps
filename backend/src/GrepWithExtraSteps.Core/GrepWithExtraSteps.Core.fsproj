@@ -9,8 +9,10 @@
         <Compile Include="AssemblyInfo.fs" />
         <Compile Include="Types.fs" />
         <Compile Include="QueryExecution.fs" />
-        <Compile Include="DependencyInjection.fs" />
+        <Compile Include="QueryJobService.fs" />
         <Compile Include="DirectoryService.fs" />
+        <Compile Include="FileSystemService.fs" />
+        <Compile Include="DependencyInjection.fs" />
     </ItemGroup>
 
     <ItemGroup>

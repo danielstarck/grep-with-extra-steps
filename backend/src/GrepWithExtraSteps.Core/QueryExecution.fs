@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module GrepWithExtraSteps.Core.QueryExecution
+module internal GrepWithExtraSteps.Core.QueryExecution
 
 open GrepWithExtraSteps.Core.Domain
 open FSharp.Control

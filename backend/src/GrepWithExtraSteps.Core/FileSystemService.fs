@@ -1,9 +1,9 @@
-namespace GrepWithExtraSteps
+namespace GrepWithExtraSteps.Core
 
 open GrepWithExtraSteps.Core.Interfaces
 open System.IO
 
-type FileSystemService() =
+type internal FileSystemService() =
     interface IFileSystemService with
         member this.GetDirectories path = Directory.EnumerateDirectories path
 

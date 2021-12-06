@@ -15,11 +15,8 @@ type Startup(configuration: IConfiguration) =
         services.AddControllers() |> ignore
         services.AddSignalR() |> ignore
 
-        (services
-            .AddSingleton<IMessageService, MessageService>()
-            .AddSingleton<IFileSystemService, FileSystemService>()
-            .AddSingleton<QueryJobService>())
-        |> addQueryService
+        services.AddSingleton<IMessageService, MessageService>()
+        |> addCoreServices
         |> ignore
 
     member _.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =

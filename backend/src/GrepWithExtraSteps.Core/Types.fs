@@ -32,7 +32,9 @@ module Domain =
 
         let value (ValidQuery query) = query
 
-    type File = { Path: string; Lines: string AsyncSeq }
+    type File =
+        { Path: string
+          Lines: string AsyncSeq }
 
     type Directory =
         { Directories: Directory seq
@@ -41,14 +43,18 @@ module Domain =
 module Interfaces =
     open Domain
 
-    type IFileSystemService =
+    type internal IDirectoryService =
+        abstract GetDirectory : fileIsInScope: (string -> bool) -> path: string -> Directory
+
+    type internal IFileSystemService =
         abstract member GetDirectories : path: string -> string seq
         abstract member GetFiles : path: string -> string seq
         abstract member GetReader : path: string -> StreamReader
 
+    type IQueryJobService =
+        abstract member StartQueryJob : Query -> unit
+        abstract member CancelQueryJob : unit -> unit
+
     type IMessageService =
         abstract member SendResultChunk : ResultChunk -> Async<unit>
         abstract member SendQueryFinished : unit -> Async<unit>
-
-    type IDirectoryService =
-        abstract GetDirectory : fileIsInScope: (string -> bool) -> path: string -> Directory
