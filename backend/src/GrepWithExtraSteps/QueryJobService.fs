@@ -1,6 +1,7 @@
 ﻿namespace GrepWithExtraSteps
 
 open System.Threading
+open System.Text.RegularExpressions
 open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
@@ -13,7 +14,7 @@ type QueryJobService(directoryService: IDirectoryService, queryService: IQuerySe
             async {
                 let chunks =
                     directoryService.GetDirectory(fun _ -> true) query.Directory
-                    |> queryService.ExecuteQuery(fun _ -> true)
+                    |> queryService.ExecuteQuery(fun line -> Regex.IsMatch(line, query.Text))
 
                 do!
                     chunks
