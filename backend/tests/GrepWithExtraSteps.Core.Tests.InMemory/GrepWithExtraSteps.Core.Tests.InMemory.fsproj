@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="QueryServiceTests.fs" />
+        <Compile Include="QueryExecutionTests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
@@ -23,6 +23,10 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\GrepWithExtraSteps.Core\GrepWithExtraSteps.Core.fsproj" />
     </ItemGroup>
 
 </Project>
