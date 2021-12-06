@@ -2,11 +2,12 @@
 
 open System.Threading
 open System.Text.RegularExpressions
+open GrepWithExtraSteps.Core
 open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
 
-type QueryJobService(directoryService: IDirectoryService, queryService: IQueryService, messageService: IMessageService) =
+type QueryJobService(directoryService: IDirectoryService, messageService: IMessageService) =
     let mutable ctsOption: CancellationTokenSource option = None
 
     member _.StartQueryJob(query: Query) : unit =
@@ -14,7 +15,7 @@ type QueryJobService(directoryService: IDirectoryService, queryService: IQuerySe
             async {
                 let chunks =
                     directoryService.GetDirectory(fun _ -> true) query.Directory
-                    |> queryService.ExecuteQuery(fun line -> Regex.IsMatch(line, query.Text))
+                    |> QueryExecution.searchDirectory(fun line -> Regex.IsMatch(line, query.Text))
 
                 do!
                     chunks
