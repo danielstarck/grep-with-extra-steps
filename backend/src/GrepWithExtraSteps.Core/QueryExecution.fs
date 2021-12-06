@@ -9,7 +9,7 @@ let private toMatchingLine filePath (lineNumber, line) : MatchingLine =
       LineNumber = lineNumber
       MatchingText = line }
 
-let private toResultChunk (lineIsMatch: string -> bool) (file: File) : Async<ResultChunk> =
+let private toResultChunk (lineIsMatch: LineIsMatch) (file: File) : Async<ResultChunk> =
     file.Lines
     |> AsyncSeq.zip (AsyncSeq.initInfinite ((+) 1L >> int))
     |> AsyncSeq.filter (snd >> lineIsMatch)
@@ -17,7 +17,7 @@ let private toResultChunk (lineIsMatch: string -> bool) (file: File) : Async<Res
     |> AsyncSeq.toListAsync
             
 // TODO: A result chunk must never be empty
-let rec searchDirectory (lineIsMatch: string -> bool) (directory: Directory) : AsyncSeq<ResultChunk> =
+let rec searchDirectory (lineIsMatch: LineIsMatch) (directory: Directory) : AsyncSeq<ResultChunk> =
     let resultChunksFromThisDirectory =
         directory.Files
         |> AsyncSeq.ofSeq

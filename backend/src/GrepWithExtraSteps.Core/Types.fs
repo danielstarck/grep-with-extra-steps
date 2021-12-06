@@ -4,6 +4,8 @@ open System.IO
 open FSharp.Control
 
 module Domain =
+    type LineIsMatch = string -> bool
+    
     type MatchingLine =
         { FilePath: string
           LineNumber: int
