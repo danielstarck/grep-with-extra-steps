@@ -5,19 +5,16 @@ open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
 
 type internal QueryService() =
-    let toMatchingLine lineIsMatch filePath (lineNumber, line) : MatchingLine option =
-        if line |> lineIsMatch then
-            Some
-                { FilePath = filePath
-                  LineNumber = lineNumber
-                  MatchingText = line }
-        else
-            None
+    let toMatchingLine filePath (lineNumber, line) : MatchingLine =
+        { FilePath = filePath
+          LineNumber = lineNumber
+          MatchingText = line }
 
     let toResultChunk (lineIsMatch: string -> bool) (file: File) : Async<ResultChunk> =
         file.Lines
         |> AsyncSeq.zip (AsyncSeq.initInfinite ((+) 1L >> int))
-        |> AsyncSeq.choose (toMatchingLine lineIsMatch file.Path)
+        |> AsyncSeq.filter (snd >> lineIsMatch)
+        |> AsyncSeq.map (toMatchingLine file.Path)
         |> AsyncSeq.toListAsync
                 
     let rec searchDirectory (lineIsMatch: string -> bool) (directory: Directory) : AsyncSeq<ResultChunk> =
