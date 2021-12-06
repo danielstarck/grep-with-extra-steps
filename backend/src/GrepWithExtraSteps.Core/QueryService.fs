@@ -33,5 +33,5 @@ type internal QueryService() =
 
     // TODO: A result chunk must never be empty
     interface IQueryService with
-        member _.ExecuteQuery (directory: Directory) (lineIsMatch: string -> bool) : AsyncSeq<ResultChunk> =
+        member _.ExecuteQuery (lineIsMatch: string -> bool) (directory: Directory) : AsyncSeq<ResultChunk> =
             searchDirectory lineIsMatch directory

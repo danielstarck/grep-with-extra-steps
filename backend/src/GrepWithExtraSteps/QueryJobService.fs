@@ -11,11 +11,9 @@ type QueryJobService(directoryService: IDirectoryService, queryService: IQuerySe
     member _.StartQueryJob(query: Query) : unit =
         let queryJobAsync =
             async {
-                let directory =
-                    directoryService.GetDirectory(fun _ -> true) query.Directory
-
                 let chunks =
-                    queryService.ExecuteQuery directory (fun _ -> true)
+                    directoryService.GetDirectory(fun _ -> true) query.Directory
+                    |> queryService.ExecuteQuery(fun _ -> true)
 
                 do!
                     chunks

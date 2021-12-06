@@ -51,7 +51,7 @@ module Interfaces =
         abstract member SendQueryFinished : unit -> Async<unit>
 
     type IQueryService =
-        abstract ExecuteQuery : Directory -> lineIsMatch: (string -> bool) -> AsyncSeq<ResultChunk>
+        abstract ExecuteQuery : lineIsMatch: (string -> bool) -> Directory -> AsyncSeq<ResultChunk>
 
     type IDirectoryService =
         abstract GetDirectory : fileIsInScope: (string -> bool) -> path: string -> Directory
