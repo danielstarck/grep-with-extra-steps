@@ -16,12 +16,12 @@ let private toResultChunk (lineIsMatch: LineIsMatch) (file: File) : Async<Result
     |> AsyncSeq.map (toMatchingLine file.Path)
     |> AsyncSeq.toListAsync
             
-// TODO: A result chunk must never be empty
 let rec searchDirectory (lineIsMatch: LineIsMatch) (directory: Directory) : AsyncSeq<ResultChunk> =
     let resultChunksFromThisDirectory =
         directory.Files
         |> AsyncSeq.ofSeq
         |> AsyncSeq.mapAsync (toResultChunk lineIsMatch)
+        |> AsyncSeq.filter (not << List.isEmpty)
 
     let resultChunksFromSubdirectories =
         directory.Directories
