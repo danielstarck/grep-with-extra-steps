@@ -141,4 +141,18 @@ type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
 
         resultChunks |> List.forall (not << List.isEmpty)
 
-// ``searchDirectory returns an empty seq when given noLineIsMatch`` (for arbitrary directory)
+    [<Fact>]
+    member _.``searchDirectory returns an empty seq when given noLineIsMatch - fact``() =
+        let resultChunks =
+            QueryExecution.searchDirectory noLineIsMatch someDirectory
+            |> AsyncSeq.toListSynchronously
+
+        do Assert.Empty resultChunks
+
+    [<Property(Arbitrary = [| typeof<Arbitraries> |])>]
+    member _.``searchDirectory returns an empty seq when given noLineIsMatch - property``(directory: Directory) =
+        let resultChunks =
+            QueryExecution.searchDirectory noLineIsMatch directory
+            |> AsyncSeq.toListSynchronously
+
+        resultChunks |> List.isEmpty
