@@ -40,13 +40,40 @@ module private Debugging =
         | [] -> lineCount
         | _ -> lineCount + (children |> List.sumBy getLineCount)
 
+[<AutoOpen>]
+module private TestValues =
+    let everyLineIsMatch: LineIsMatch = fun _ -> true
+
+    let noLineIsMatch: LineIsMatch = fun _ -> false
+
+    let emptyDirectory =
+        { Directories = Seq.empty
+          Files = Seq.empty }
+
+    let someDirectory =
+        { Directories = Seq.empty
+          Files =
+              seq {
+                  { Path = "/file"
+                    Lines =
+                        asyncSeq {
+                            yield "line 1"
+                            yield "line 2"
+                            yield "line 3"
+                        } }
+              } }
+
+
 module private Generators =
+    let nonNullStringGenerator =
+        Arb.Default.String()
+        |> Arb.filter (fun string -> string <> null)
+        |> Arb.toGen
+
     let sizedFileGenerator size =
         gen {
             let! lines =
-                Arb.Default.String()
-                |> Arb.filter (fun string -> string <> null)
-                |> Arb.toGen
+                nonNullStringGenerator
                 |> Gen.listOfLength size
                 |> Gen.map AsyncSeq.ofSeq
 
@@ -90,33 +117,27 @@ module private Generators =
 
         Gen.sized sizedDirectoryGenerator
 
+    let lineIsMatchGenerator =
+        let randomLineIsMatchGenerator =
+            gen {
+                let! monkey = nonNullStringGenerator
+
+                return (=) monkey
+            }
+
+        [ everyLineIsMatch; noLineIsMatch ]
+        |> List.map Gen.constant
+        |> List.append [ randomLineIsMatchGenerator ]
+        |> Gen.oneof
+
 type Arbitraries() =
     static member Directory() : Arbitrary<Directory> =
         Generators.directoryGenerator |> Arb.fromGen
 
+    static member LineIsMatch() : Arbitrary<LineIsMatch> =
+        Generators.lineIsMatchGenerator |> Arb.fromGen
+
 type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
-
-    let everyLineIsMatch: LineIsMatch = fun _ -> true
-
-    let noLineIsMatch: LineIsMatch = fun _ -> false
-
-    let emptyDirectory =
-        { Directories = Seq.empty
-          Files = Seq.empty }
-
-    let someDirectory =
-        { Directories = Seq.empty
-          Files =
-              seq {
-                  { Path = "/file"
-                    Lines =
-                        asyncSeq {
-                            yield "line 1"
-                            yield "line 2"
-                            yield "line 3"
-                        } }
-              } }
-
     [<Fact>]
     member _.``searchDirectory returns an empty seq when given an empty directory``() =
         let resultChunks =
@@ -133,10 +154,14 @@ type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
 
         do resultChunks |> Seq.iter Assert.NotEmpty
 
+    // TODO: add arbitrary LineIsMatch
     [<Property(Arbitrary = [| typeof<Arbitraries> |])>]
-    member _.``searchDirectory does not return empty result chunks - property``(directory: Directory) =
+    member _.``searchDirectory does not return empty result chunks - property``
+        (directory: Directory)
+        (lineIsMatch: LineIsMatch)
+        =
         let resultChunks =
-            QueryExecution.searchDirectory everyLineIsMatch directory
+            QueryExecution.searchDirectory lineIsMatch directory
             |> AsyncSeq.toListSynchronously
 
         resultChunks |> List.forall (not << List.isEmpty)
