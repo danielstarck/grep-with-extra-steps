@@ -51,7 +51,18 @@ module private TestValues =
           Files = Seq.empty }
 
     let someDirectory =
-        { Directories = Seq.empty
+        { Directories =
+              Seq.singleton
+                  { Directories = Seq.empty
+                    Files =
+                        seq {
+                            { Path = "/directory/file"
+                              Lines =
+                                  asyncSeq {
+                                      yield "line 4"
+                                      yield "line 5"
+                                  } }
+                        } }
           Files =
               seq {
                   { Path = "/file"
@@ -154,7 +165,6 @@ type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
 
         do resultChunks |> Seq.iter Assert.NotEmpty
 
-    // TODO: add arbitrary LineIsMatch
     [<Property(Arbitrary = [| typeof<Arbitraries> |])>]
     member _.``searchDirectory does not return empty result chunks - property``
         (directory: Directory)
@@ -181,3 +191,33 @@ type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
             |> AsyncSeq.toListSynchronously
 
         resultChunks |> List.isEmpty
+
+    [<Fact>]
+    member _.``searchDirectory finds matching lines``() =
+        let lineIsMatch line =
+            List.contains line [ "line 1"; "line 2"; "line 5" ]
+
+        let matchingLines =
+            QueryExecution.searchDirectory lineIsMatch someDirectory
+            |> AsyncSeq.toListSynchronously
+            |> List.concat
+
+        let matchingLine1 =
+            { FilePath = "/file"
+              LineNumber = 1
+              MatchingText = "line 1" }
+
+        let matchingLine2 =
+            { FilePath = "/file"
+              LineNumber = 2
+              MatchingText = "line 2" }
+
+        let matchingLine3 =
+            { FilePath = "/directory/file"
+              LineNumber = 2
+              MatchingText = "line 5" }
+        
+        do Assert.Equal(3, matchingLines.Length)
+        do Assert.Contains(matchingLine1, matchingLines)
+        do Assert.Contains(matchingLine2, matchingLines)
+        do Assert.Contains(matchingLine3, matchingLines)
