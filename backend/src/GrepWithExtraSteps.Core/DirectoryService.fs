@@ -7,9 +7,8 @@ open FSharp.Control
 // TODO: investigate Directory.EnumerateFileSystemEntries
 type internal DirectoryService(fileSystemService: IFileSystemService) =
     let readLines path : AsyncSeq<string> =
-        use reader = fileSystemService.GetReader path
-
         asyncSeq {
+            use reader = fileSystemService.GetReader path
             while not reader.EndOfStream do
                 let! line = reader.ReadLineAsync() |> Async.AwaitTask
 
