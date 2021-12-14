@@ -5,7 +5,7 @@ open FSharp.Control
 
 module Domain =
     type LineIsMatch = string -> bool
-    
+
     type MatchingLine =
         { FilePath: string
           LineNumber: int
@@ -42,11 +42,13 @@ module Domain =
         { Directories: Directory seq
           Files: File seq }
 
+    type FileIsInScope = string -> bool
+
 module Interfaces =
     open Domain
 
     type internal IDirectoryService =
-        abstract GetDirectory : fileIsInScope: (string -> bool) -> path: string -> Directory
+        abstract GetDirectory : fileIsInScope: FileIsInScope -> path: string -> Directory
 
     type internal IFileSystemService =
         abstract member GetDirectories : path: string -> string seq

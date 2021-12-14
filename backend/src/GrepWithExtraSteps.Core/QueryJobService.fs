@@ -1,4 +1,4 @@
-﻿namespace GrepWithExtraSteps.Core
+namespace GrepWithExtraSteps.Core
 
 open System.Threading
 open System.Text.RegularExpressions
@@ -14,8 +14,13 @@ type internal QueryJobService(directoryService: IDirectoryService, messageServic
         member _.StartQueryJob(query: Query) : unit =
             let queryJobAsync =
                 async {
+                    let fileIsInScope (path: string) =
+                        let filename = System.IO.Path.GetFileName(path)
+                        
+                        Regex.IsMatch(filename, query.Files)
+                    
                     let chunks =
-                        directoryService.GetDirectory(fun _ -> true) query.Directory
+                        directoryService.GetDirectory fileIsInScope query.Directory
                         |> QueryExecution.searchDirectory (fun line -> Regex.IsMatch(line, query.Text))
 
                     do!
