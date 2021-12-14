@@ -55,6 +55,9 @@ module Interfaces =
         abstract member GetFiles : path: string -> string seq
         abstract member GetReader : path: string -> StreamReader
 
+    type internal IPathService =
+        abstract member GetFilename : path: string -> string
+
     type IQueryJobService =
         abstract member StartQueryJob : Query -> unit
         abstract member CancelQueryJob : unit -> unit

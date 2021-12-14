@@ -12,6 +12,7 @@
         <Compile Include="QueryJobService.fs" />
         <Compile Include="DirectoryService.fs" />
         <Compile Include="FileSystemService.fs" />
+        <Compile Include="PathService.fs" />
         <Compile Include="DependencyInjection.fs" />
     </ItemGroup>
 
