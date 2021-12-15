@@ -12,6 +12,7 @@
         <Compile Include="Fakes\PathService.fs" />
         <Compile Include="Fakes\MessageService.fs" />
         <Compile Include="QueryExecutionTests.fs" />
+        <Compile Include="DirectoryServiceTests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
