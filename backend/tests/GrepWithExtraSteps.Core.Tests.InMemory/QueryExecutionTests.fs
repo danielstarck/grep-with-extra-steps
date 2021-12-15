@@ -216,7 +216,7 @@ type QueryExecutionTests(testOutputHelper: ITestOutputHelper) =
             { FilePath = "/directory/file"
               LineNumber = 2
               MatchingText = "line 5" }
-        
+
         do Assert.Equal(3, matchingLines.Length)
         do Assert.Contains(matchingLine1, matchingLines)
         do Assert.Contains(matchingLine2, matchingLines)
