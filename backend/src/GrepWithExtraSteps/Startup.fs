@@ -2,6 +2,7 @@ namespace GrepWithExtraSteps
 
 open GrepWithExtraSteps.Core.DependencyInjection
 open GrepWithExtraSteps.Core.Interfaces
+open GrepWithExtraSteps.Types
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
@@ -15,7 +16,9 @@ type Startup(configuration: IConfiguration) =
         services.AddControllers() |> ignore
         services.AddSignalR() |> ignore
 
-        services.AddSingleton<IMessageService, MessageService>()
+        services
+            .AddSingleton<IMessageService, MessageService>()
+            .AddSingleton<ISomeHubService, SomeHubService>()
         |> addCoreServices
         |> ignore
 
