@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Filename.fs" />
         <Compile Include="Fakes\FileSystemService.fs" />
         <Compile Include="Fakes\PathService.fs" />
         <Compile Include="Fakes\MessageService.fs" />
