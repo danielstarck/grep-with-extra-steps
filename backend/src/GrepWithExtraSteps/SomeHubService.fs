@@ -12,7 +12,7 @@ type QueryValidationError =
     | FilesIsNotValidRegex
     | TextIsNotValidRegex
 
-type SomeHubService(logger: ILogger<SomeHubService>, pathService: IPathService, queryJobService: IQueryJobService) =
+type SomeHubService(logger: ILogger<SomeHubService>, queryJobService: IQueryJobService) =
     let getRegex error regex =
         try
             Ok <| System.Text.RegularExpressions.Regex regex
@@ -24,7 +24,7 @@ type SomeHubService(logger: ILogger<SomeHubService>, pathService: IPathService, 
             Ok <| fun _ -> true
         else
             getRegex FilesIsNotValidRegex files
-            |> Result.map (fun regex -> pathService.GetFilename >> regex.IsMatch)
+            |> Result.map (fun regex -> System.IO.Path.GetFileName >> regex.IsMatch)
 
     let getLineIsMatch (text: string) : Result<LineIsMatch, QueryValidationError> =
         result {

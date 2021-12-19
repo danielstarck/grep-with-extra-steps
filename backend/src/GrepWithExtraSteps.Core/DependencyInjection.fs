@@ -8,4 +8,3 @@ let addCoreServices (services: IServiceCollection) =
         .AddSingleton<IQueryJobService, QueryJobService>()
         .AddSingleton<IDirectoryService, DirectoryService>()
         .AddSingleton<IFileSystemService, FileSystemService>()
-        .AddSingleton<IPathService, PathService>()
