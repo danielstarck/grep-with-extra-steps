@@ -18,22 +18,6 @@ module Domain =
           Files: string
           Text: string }
 
-    // TODO: private constructor, module with same name, all that good stuff
-    type ValidQuery = private ValidQuery of Query
-
-    type ValidationError = | DirectoryDoesNotExist
-
-    type ValidateQuery = Query -> Result<ValidQuery, ValidationError>
-
-    module ValidQuery =
-        let validate query =
-            if true then
-                Ok <| ValidQuery query
-            else
-                Error <| DirectoryDoesNotExist
-
-        let value (ValidQuery query) = query
-
     type File =
         { Path: string
           Lines: string AsyncSeq }
