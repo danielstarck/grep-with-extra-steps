@@ -1,32 +1,20 @@
 ﻿namespace GrepWithExtraSteps.Core
 
 open System.Threading
-open System.Text.RegularExpressions
 open GrepWithExtraSteps.Core
-open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
 
-type internal QueryJobService
-    (
-        directoryService: IDirectoryService,
-        messageService: IMessageService,
-        pathService: IPathService
-    ) =
+type internal QueryJobService(directoryService: IDirectoryService, messageService: IMessageService) =
     let mutable ctsOption: CancellationTokenSource option = None
 
     interface IQueryJobService with
-        member _.StartQueryJob(query: Query) : unit =
+        member _.StartQueryJob directoryPath fileIsInScope lineIsMatch : unit =
             let queryJobAsync =
                 async {
-                    let fileIsInScope (path: string) =
-                        let filename = pathService.GetFilename path
-
-                        Regex.IsMatch(filename, query.Files)
-
                     let chunks =
-                        directoryService.GetDirectory fileIsInScope query.Directory
-                        |> QueryExecution.searchDirectory (fun line -> Regex.IsMatch(line, query.Text))
+                        directoryService.GetDirectory fileIsInScope directoryPath
+                        |> QueryExecution.searchDirectory lineIsMatch
 
                     do!
                         chunks

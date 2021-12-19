@@ -16,13 +16,17 @@ type DirectoryServiceTests() =
 
     let everyFileIsInScope: FileIsInScope = fun _ -> true
 
+    let root: DirectoryPath =
+            Result.getUnsafe
+            <| DirectoryPath.New(fun _ -> true) "/"
+
     [<Fact>]
     member _.``GetDirectory returns empty when given empty FileSystemService``() =
         let directoryService =
             getDirectoryService Map.empty Map.empty Map.empty
 
         let directory =
-            directoryService.GetDirectory everyFileIsInScope "/"
+            directoryService.GetDirectory everyFileIsInScope root
 
         do Assert.Empty directory.Directories
         do Assert.Empty directory.Files
@@ -65,7 +69,7 @@ type DirectoryServiceTests() =
             getDirectoryService directoriesByPath filesByPath linesByPath
 
         let directory =
-            directoryService.GetDirectory everyFileIsInScope "/"
+            directoryService.GetDirectory everyFileIsInScope root
 
         let directoriesInRoot = directory.Directories |> Seq.toList
 

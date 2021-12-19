@@ -9,6 +9,7 @@ type internal DirectoryService(fileSystemService: IFileSystemService) =
     let readLines path : AsyncSeq<string> =
         asyncSeq {
             use reader = fileSystemService.GetReader path
+
             while not reader.EndOfStream do
                 let! line = reader.ReadLineAsync() |> Async.AwaitTask
 
@@ -27,4 +28,5 @@ type internal DirectoryService(fileSystemService: IFileSystemService) =
           Files = getFiles fileIsInScope path }
 
     interface IDirectoryService with
-        member this.GetDirectory fileIsInScope path = getDirectory fileIsInScope path
+        member this.GetDirectory fileIsInScope directoryPath =
+            getDirectory fileIsInScope (DirectoryPath.Value directoryPath)

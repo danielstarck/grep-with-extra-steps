@@ -6,8 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="Types.fs" />
         <Compile Include="SomeHub.fs" />
         <Compile Include="MessageService.fs" />
+        <Compile Include="SomeHubService.fs" />
         <Compile Include="Startup.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>

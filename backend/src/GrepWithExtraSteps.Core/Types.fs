@@ -1,9 +1,35 @@
 namespace GrepWithExtraSteps.Core
 
+open System
 open System.IO
 open FSharp.Control
+open FsToolkit.ErrorHandling
 
 module Domain =
+    type DirectoryPathError =
+        | PathIsNullOrEmptyString
+        | DirectoryDoesNotExist
+
+    type DirectoryPath =
+        private
+        | DirectoryPath of string
+        static member New (directoryExists: string -> bool) path : Result<DirectoryPath, DirectoryPathError> =
+            result {
+                do!
+                    String.IsNullOrEmpty path
+                    |> Result.requireFalse PathIsNullOrEmptyString
+
+                do!
+                    directoryExists path
+                    |> Result.requireTrue DirectoryDoesNotExist
+
+                return DirectoryPath path
+            }
+
+        static member Value(DirectoryPath path) = path
+
+    type FileIsInScope = string -> bool
+
     type LineIsMatch = string -> bool
 
     type MatchingLine =
@@ -26,13 +52,11 @@ module Domain =
         { Directories: Directory seq
           Files: File seq }
 
-    type FileIsInScope = string -> bool
-
 module Interfaces =
     open Domain
 
     type internal IDirectoryService =
-        abstract GetDirectory : fileIsInScope: FileIsInScope -> path: string -> Directory
+        abstract GetDirectory : FileIsInScope -> DirectoryPath -> Directory
 
     type internal IFileSystemService =
         abstract member GetDirectories : path: string -> string seq
@@ -43,7 +67,7 @@ module Interfaces =
         abstract member GetFilename : path: string -> string
 
     type IQueryJobService =
-        abstract member StartQueryJob : Query -> unit
+        abstract member StartQueryJob : DirectoryPath -> FileIsInScope -> LineIsMatch -> unit
         abstract member CancelQueryJob : unit -> unit
 
     type IMessageService =
