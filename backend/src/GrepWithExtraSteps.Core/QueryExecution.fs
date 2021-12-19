@@ -15,7 +15,7 @@ let private toResultChunk (lineIsMatch: LineIsMatch) (file: File) : Async<Result
     |> AsyncSeq.filter (snd >> lineIsMatch)
     |> AsyncSeq.map (toMatchingLine file.Path)
     |> AsyncSeq.toListAsync
-            
+
 let rec searchDirectory (lineIsMatch: LineIsMatch) (directory: Directory) : AsyncSeq<ResultChunk> =
     let resultChunksFromThisDirectory =
         directory.Files
