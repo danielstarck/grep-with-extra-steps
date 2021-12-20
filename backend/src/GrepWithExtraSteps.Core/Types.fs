@@ -64,8 +64,7 @@ module Interfaces =
         abstract member GetReader : path: string -> StreamReader
 
     type IQueryJobService =
-        abstract member StartQueryJob : DirectoryPath -> FileIsInScope -> LineIsMatch -> unit
-        abstract member CancelQueryJob : unit -> unit
+        abstract member StartQueryJob : DirectoryPath -> FileIsInScope -> LineIsMatch -> Async<unit>
 
     type IMessageService =
         abstract member SendResultChunk : ResultChunk -> Async<unit>
