@@ -131,9 +131,9 @@ module private Generators =
     let lineIsMatchGenerator =
         let randomLineIsMatchGenerator =
             gen {
-                let! monkey = nonNullStringGenerator
+                let! nonNullString = nonNullStringGenerator
 
-                return (=) monkey
+                return (=) nonNullString
             }
 
         [ everyLineIsMatch; noLineIsMatch ]
