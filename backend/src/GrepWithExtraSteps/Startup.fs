@@ -18,7 +18,7 @@ type Startup(configuration: IConfiguration) =
 
         services
             .AddSingleton<IMessageService, MessageService>()
-            .AddSingleton<ISomeHubService, SomeHubService>()
+            .AddSingleton<IQueryHubService, QueryHubService>()
         |> addCoreServices
         |> ignore
 
@@ -33,5 +33,5 @@ type Startup(configuration: IConfiguration) =
             .UseAuthorization()
             .UseEndpoints(fun endpoints ->
                 endpoints.MapControllers() |> ignore
-                endpoints.MapHub<SomeHub>("/someHub") |> ignore)
+                endpoints.MapHub<QueryHub>("/query-hub") |> ignore)
         |> ignore

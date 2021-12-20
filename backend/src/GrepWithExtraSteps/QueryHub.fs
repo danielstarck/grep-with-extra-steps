@@ -6,19 +6,19 @@ open GrepWithExtraSteps.Types
 open Microsoft.AspNetCore.SignalR
 open Microsoft.Extensions.Logging
 
-type SomeHub(logger: ILogger<SomeHub>, someHubService: ISomeHubService) =
+type QueryHub(logger: ILogger<QueryHub>, queryHubService: IQueryHubService) =
     inherit Hub()
 
     member _.StartQuery(query: Query) : Task =
         do logger.LogInformation $"StartQuery: %A{query}"
 
-        do someHubService.StartQuery query
+        do queryHubService.StartQuery query
 
         Task.CompletedTask
 
     member _.CancelQuery() : Task =
         do logger.LogInformation "CancelQuery: no payload"
 
-        do someHubService.CancelQuery()
+        do queryHubService.CancelQuery()
 
         Task.CompletedTask

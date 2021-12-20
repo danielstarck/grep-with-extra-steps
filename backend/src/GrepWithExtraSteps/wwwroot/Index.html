@@ -20,7 +20,7 @@
 
     const connection =
         new signalR.HubConnectionBuilder()
-            .withUrl("/someHub")
+            .withUrl("/query-hub")
             .configureLogging(signalR.LogLevel.Information)
             .build();
 

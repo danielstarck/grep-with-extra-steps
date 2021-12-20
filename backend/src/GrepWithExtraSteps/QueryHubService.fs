@@ -14,7 +14,7 @@ type QueryValidationError =
     | FilesIsNotValidRegex
     | TextIsNotValidRegex
 
-type SomeHubService(logger: ILogger<SomeHubService>, queryJobService: IQueryJobService) =
+type QueryHubService(logger: ILogger<QueryHubService>, queryJobService: IQueryJobService) =
     let mutable ctsOption: CancellationTokenSource option = None
 
     let getRegex error regex =
@@ -49,7 +49,7 @@ type SomeHubService(logger: ILogger<SomeHubService>, queryJobService: IQueryJobS
             return directoryPath, fileIsInScope, lineIsMatch
         }
 
-    interface ISomeHubService with
+    interface IQueryHubService with
         member _.StartQuery(query: Query) : unit =
             match validateQuery query with
             | Ok (directoryPath, fileIsInScope, lineIsMatch) ->

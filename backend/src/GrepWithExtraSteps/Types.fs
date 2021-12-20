@@ -2,7 +2,7 @@
 
 open GrepWithExtraSteps.Core.Domain
 
-type ISomeHubService =
+type IQueryHubService =
     abstract member StartQuery : Query -> unit
 
     abstract member CancelQuery : unit -> unit
