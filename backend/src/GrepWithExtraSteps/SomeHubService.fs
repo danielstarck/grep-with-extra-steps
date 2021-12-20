@@ -1,6 +1,7 @@
-namespace GrepWithExtraSteps
+﻿namespace GrepWithExtraSteps
 
 open System
+open System.IO
 open System.Threading
 open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
@@ -27,7 +28,7 @@ type SomeHubService(logger: ILogger<SomeHubService>, queryJobService: IQueryJobS
             Ok <| fun _ -> true
         else
             getRegex FilesIsNotValidRegex files
-            |> Result.map (fun regex -> System.IO.Path.GetFileName >> regex.IsMatch)
+            |> Result.map (fun regex -> Path.GetFileName >> regex.IsMatch)
 
     let getLineIsMatch (text: string) : Result<LineIsMatch, QueryValidationError> =
         result {
@@ -39,8 +40,7 @@ type SomeHubService(logger: ILogger<SomeHubService>, queryJobService: IQueryJobS
     let validateQuery query =
         result {
             let! directoryPath =
-                // TODO: fun _ -> true
-                DirectoryPath.New(fun _ -> true) query.Directory
+                DirectoryPath.New Directory.Exists query.Directory
                 |> Result.mapError DirectoryPathError
 
             let! fileIsInScope = getFileIsInScope query.Files
