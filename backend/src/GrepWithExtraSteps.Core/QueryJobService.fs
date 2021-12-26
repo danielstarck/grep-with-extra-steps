@@ -5,7 +5,6 @@ open GrepWithExtraSteps.Core.Interfaces
 open FSharp.Control
 
 type internal QueryJobService(directoryService: IDirectoryService, messageService: IMessageService) =
-
     interface IQueryJobService with
         member _.StartQueryJob directoryPath fileIsInScope lineIsMatch : Async<unit> =
             async {
