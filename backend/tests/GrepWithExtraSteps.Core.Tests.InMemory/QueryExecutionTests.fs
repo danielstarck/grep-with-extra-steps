@@ -2,6 +2,7 @@ namespace GrepWithExtraSteps.Core.Tests.InMemory
 
 open System
 open FSharp.Control
+open GrepWithExtraSteps.Base
 open GrepWithExtraSteps.Core
 open GrepWithExtraSteps.Core.Domain
 open Xunit

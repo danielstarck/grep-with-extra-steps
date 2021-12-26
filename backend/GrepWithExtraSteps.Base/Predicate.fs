@@ -1,5 +1,5 @@
 [<Microsoft.FSharp.Core.RequireQualifiedAccess>]
-module GrepWithExtraSteps.Core.Tests.InMemory.Predicate
+module GrepWithExtraSteps.Base.Predicate
 
 let alwaysTrue _ = true
 

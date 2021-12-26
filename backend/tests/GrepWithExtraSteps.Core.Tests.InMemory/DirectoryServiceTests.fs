@@ -1,6 +1,7 @@
 ﻿namespace GrepWithExtraSteps.Core.Tests.InMemory
 
 open FSharp.Control
+open GrepWithExtraSteps.Base
 open GrepWithExtraSteps.Core
 open GrepWithExtraSteps.Core.Domain
 open GrepWithExtraSteps.Core.Interfaces
@@ -18,7 +19,7 @@ type DirectoryServiceTests() =
 
     let root: DirectoryPath =
             Result.getUnsafe
-            <| DirectoryPath.New(Predicate.alwaysTrue) "/"
+            <| DirectoryPath.New Predicate.alwaysTrue "/"
 
     [<Fact>]
     member _.``GetDirectory returns empty when given empty FileSystemService``() =
