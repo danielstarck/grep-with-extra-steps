@@ -14,11 +14,11 @@ type DirectoryServiceTests() =
 
         upcast DirectoryService(fileSystemService)
 
-    let everyFileIsInScope: FileIsInScope = fun _ -> true
+    let everyFileIsInScope: FileIsInScope = Predicate.alwaysTrue
 
     let root: DirectoryPath =
             Result.getUnsafe
-            <| DirectoryPath.New(fun _ -> true) "/"
+            <| DirectoryPath.New(Predicate.alwaysTrue) "/"
 
     [<Fact>]
     member _.``GetDirectory returns empty when given empty FileSystemService``() =

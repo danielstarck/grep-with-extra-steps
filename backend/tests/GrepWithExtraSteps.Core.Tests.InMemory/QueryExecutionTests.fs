@@ -42,9 +42,9 @@ module private Debugging =
 
 [<AutoOpen>]
 module private TestValues =
-    let everyLineIsMatch: LineIsMatch = fun _ -> true
+    let everyLineIsMatch: LineIsMatch = Predicate.alwaysTrue
 
-    let noLineIsMatch: LineIsMatch = fun _ -> false
+    let noLineIsMatch: LineIsMatch = Predicate.alwaysFalse
 
     let emptyDirectory =
         { Directories = Seq.empty
