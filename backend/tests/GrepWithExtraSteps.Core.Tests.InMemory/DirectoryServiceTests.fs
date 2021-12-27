@@ -18,8 +18,8 @@ type DirectoryServiceTests() =
     let everyFileIsInScope: FileIsInScope = Predicate.alwaysTrue
 
     let root: DirectoryPath =
-            Result.getUnsafe
-            <| DirectoryPath.New Predicate.alwaysTrue "/"
+        Result.getUnsafe
+        <| DirectoryPath.New Predicate.alwaysTrue "/"
 
     [<Fact>]
     member _.``GetDirectory returns empty when given empty FileSystemService``() =
@@ -35,39 +35,8 @@ type DirectoryServiceTests() =
     // TODO: add some property based analogue
     [<Fact>]
     member _.``GetDirectory returns expected directories, files and lines``() =
-        let directoriesByPath =
-            [ "/",
-              seq {
-                  yield "/directory1"
-                  yield "/directory2"
-              }
-              "/directory2", seq { yield "/directory2/directory3" } ]
-            |> Map.ofList
-
-        let filesByPath =
-            [ "/directory2/directory3",
-              seq {
-                  yield "/directory2/directory3/file1"
-                  yield "/directory2/directory3/file2"
-              } ]
-            |> Map.ofList
-
-        let linesByPath =
-            [ "/directory2/directory3/file1",
-              seq {
-                  yield "line1"
-                  yield "line2"
-              }
-              "/directory2/directory3/file2",
-              seq {
-                  yield "line3"
-                  yield "line4"
-                  yield "line5"
-              } ]
-            |> Map.ofList
-
-        let directoryService =
-            getDirectoryService directoriesByPath filesByPath linesByPath
+        let directoryService: IDirectoryService =
+            upcast DirectoryService Fakes.FileSystemService.WithTestData
 
         let directory =
             directoryService.GetDirectory everyFileIsInScope root
