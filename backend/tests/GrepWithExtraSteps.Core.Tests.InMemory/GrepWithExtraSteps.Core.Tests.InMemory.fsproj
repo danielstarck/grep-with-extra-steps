@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\GrepWithExtraSteps.Base\GrepWithExtraSteps.Base.fsproj" />
+      <ProjectReference Include="..\..\src\GrepWithExtraSteps.Base\GrepWithExtraSteps.Base.fsproj" />
       <ProjectReference Include="..\..\src\GrepWithExtraSteps.Core\GrepWithExtraSteps.Core.fsproj" />
     </ItemGroup>
 

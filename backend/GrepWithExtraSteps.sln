@@ -9,7 +9,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Core", "
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Core.Tests.InMemory", "tests\GrepWithExtraSteps.Core.Tests.InMemory\GrepWithExtraSteps.Core.Tests.InMemory.fsproj", "{E0386EA8-6CA1-42BE-903C-1293506247C7}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Base", "GrepWithExtraSteps.Base\GrepWithExtraSteps.Base.fsproj", "{97340C99-DEAE-4FD5-8D78-5B97C0D4D0B4}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GrepWithExtraSteps.Base", "src\GrepWithExtraSteps.Base\GrepWithExtraSteps.Base.fsproj", "{97340C99-DEAE-4FD5-8D78-5B97C0D4D0B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
